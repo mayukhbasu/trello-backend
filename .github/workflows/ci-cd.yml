@@ -61,21 +61,23 @@ jobs:
         run: |
           gcloud run deploy task-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
-      # Step 7: Update API Gateway configuration
-      - name: Update API Gateway configuration if it exists
+      # Step 7: Check if API Gateway config exists, delete if it does
+      - name: Delete API Gateway config if it exists
         run: |
-          gcloud api-gateway api-configs update trello-backend-config \
-              --api=trello-backend-api \
-              --openapi-spec=new-api-gateway.yaml \
-              --project=${{ secrets.GCP_PROJECT_ID }} \
-              --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com \
-          || gcloud api-gateway api-configs create trello-backend-config \
+          if gcloud api-gateway api-configs describe trello-backend-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }}; then
+            gcloud api-gateway api-configs delete trello-backend-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
+          fi
+
+      # Step 8: Create API Gateway configuration
+      - name: Create API Gateway configuration
+        run: |
+          gcloud api-gateway api-configs create trello-backend-config \
               --api=trello-backend-api \
               --openapi-spec=new-api-gateway.yaml \
               --project=${{ secrets.GCP_PROJECT_ID }} \
               --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com
 
-      # Step 8: Deploy API Gateway
+      # Step 9: Deploy API Gateway
       - name: Deploy API Gateway
         run: |
           gcloud api-gateway gateways create trello-backend-gateway \

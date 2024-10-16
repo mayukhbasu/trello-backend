@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  user-service:
+    platform: linux/amd64
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    image: gcr.io/trello-graphql-backend/user-service
+    ports:
+      - "4001:4001"  # Map external port 4001 to internal port 4001 (or the port your user-service listens on)
+
+  board-service:
+    platform: linux/amd64
+    build:
+      context: ./services/board-service
+      dockerfile: Dockerfile
+    image: gcr.io/trello-graphql-backend/board-service
+    ports:
+      - "4002:4002"  # Map external port 4002 to internal port 4002 (or the port your board-service listens on)
+
+  task-service:
+    platform: linux/amd64
+    build:
+      context: ./services/task-service
+      dockerfile: Dockerfile
+    image: gcr.io/trello-graphql-backend/task-service
+    ports:
+      - "4003:4003"  # Map external port 4003 to internal port 4003 (or the port your task-service listens on)

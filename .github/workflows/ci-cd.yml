@@ -61,47 +61,56 @@ jobs:
         run: |
           gcloud run deploy task-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
-      # Step 7: Dynamically create a placeholder OpenAPI spec file
-      - name: Create placeholder OpenAPI spec file
+      # Step 7: Retrieve URLs for Cloud Run services
+      - name: Retrieve URLs for Cloud Run services
+        run: |
+          USER_URL=$(gcloud run services describe user-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
+          TASK_URL=$(gcloud run services describe task-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
+          BOARD_URL=$(gcloud run services describe board-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
+          echo "User URL: $USER_URL"
+          echo "Task URL: $TASK_URL"
+          echo "Board URL: $BOARD_URL"
+          echo "::set-output name=USER_URL::$USER_URL"
+          echo "::set-output name=TASK_URL::$TASK_URL"
+          echo "::set-output name=BOARD_URL::$BOARD_URL"
+
+      # Step 8: Dynamically create OpenAPI spec with service URLs
+      - name: Dynamically create OpenAPI spec with service URLs
         run: |
           echo 'swagger: "2.0"
           info:
-            title: "Placeholder API Gateway"
+            title: "Trello Backend API"
             version: "1.0.0"
           paths:
-            /:
+            /user:
               get:
-                summary: "Placeholder response"
-                operationId: placeholderOperation
+                summary: "User Service"
+                operationId: userService
+                x-google-backend:
+                  address: '${USER_URL}'
                 responses:
                   "200":
-                    description: "A successful response"' > placeholder-api-gateway.yaml
+                    description: "A successful response"
+            /task:
+              get:
+                summary: "Task Service"
+                operationId: taskService
+                x-google-backend:
+                  address: '${TASK_URL}'
+                responses:
+                  "200":
+                    description: "A successful response"
+            /board:
+              get:
+                summary: "Board Service"
+                operationId: boardService
+                x-google-backend:
+                  address: '${BOARD_URL}'
+                responses:
+                  "200":
+                    description: "A successful response"' > new-api-gateway.yaml
 
-      # Step 8: Create a placeholder API Gateway configuration
-      - name: Create placeholder API Gateway configuration
-        run: |
-          gcloud api-gateway api-configs create placeholder-config \
-              --api=trello-backend-api \
-              --openapi-spec=./placeholder-api-gateway.yaml \
-              --project=${{ secrets.GCP_PROJECT_ID }}
-
-      # Step 9: Detach API Gateway from current config by pointing to the placeholder
-      - name: Detach API Gateway from current config
-        run: |
-          gcloud api-gateway gateways update trello-backend-gateway \
-              --api=trello-backend-api \
-              --api-config=placeholder-config \
-              --location=${{ secrets.GCP_REGION }} \
-              --project=${{ secrets.GCP_PROJECT_ID }}
-
-      # Step 10: Delete API Gateway config if it exists
-      - name: Delete API Gateway config if it exists
-        run: |
-          if gcloud api-gateway api-configs describe trello-backend-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }}; then
-            gcloud api-gateway api-configs delete trello-backend-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
-          fi
-
-      # Step 11: Create API Gateway configuration
+      # Step 9: Create API Gateway configuration
       - name: Create API Gateway configuration
         run: |
           gcloud api-gateway api-configs create trello-backend-config \
@@ -110,7 +119,7 @@ jobs:
               --project=${{ secrets.GCP_PROJECT_ID }} \
               --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com
 
-      # Step 12: Deploy API Gateway
+      # Step 10: Deploy API Gateway
       - name: Deploy API Gateway
         run: |
           gcloud api-gateway gateways create trello-backend-gateway \

@@ -25,39 +25,52 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          export_default_credentials_to_environment: true  # Correct input
 
       # Step 4: Build and push Docker images to Google Container Registry (GCR)
       - name: Build and push user-service Docker image
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service ./services/user-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service
 
       - name: Build and push board-service Docker image
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service ./services/board-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service
 
       - name: Build and push task-service Docker image
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service ./services/task-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service
 
       # Step 5: Deploy services to Google Cloud Run
       - name: Deploy user-service to Cloud Run
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           gcloud run deploy user-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
       - name: Deploy board-service to Cloud Run
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           gcloud run deploy board-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
       - name: Deploy task-service to Cloud Run
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           gcloud run deploy task-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
       # Step 6: Update API Gateway configuration
       - name: Create or update API Gateway configuration
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           gcloud api-gateway api-configs create trello-backend-config \
               --api=trello-backend-api \
@@ -67,6 +80,8 @@ jobs:
 
       # Step 7: Deploy API Gateway
       - name: Deploy API Gateway
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         run: |
           gcloud api-gateway gateways create trello-backend-gateway \
               --api=trello-backend-api \

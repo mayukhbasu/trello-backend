@@ -1,0 +1,65 @@
+swagger: "2.0"
+info:
+  title: "Trello GraphQL Backend API"
+  description: "API Gateway for Task, Board, and User services"
+  version: "1.0.0"
+schemes:
+  - https
+paths:
+  /task:
+    post:
+      summary: "Task Service"
+      operationId: taskService
+      x-google-backend:
+        address: https://task-service-104926798924.us-central1.run.app/graphql
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: query
+          schema:
+            type: object
+            properties:
+              query:
+                type: string
+      responses:
+        '200':
+          description: A successful GraphQL response from Task Service
+  /board:
+    post:
+      summary: "Board Service"
+      operationId: boardService
+      x-google-backend:
+        address: https://board-service-104926798924.us-central1.run.app/graphql
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: query
+          schema:
+            type: object
+            properties:
+              query:
+                type: string
+      responses:
+        '200':
+          description: A successful GraphQL response from Board Service
+  /user:
+    post:
+      summary: "User Service"
+      operationId: userService
+      x-google-backend:
+        address: https://user-service-104926798924.us-central1.run.app/graphql
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: query
+          schema:
+            type: object
+            properties:
+              query:
+                type: string
+      responses:
+        '200':
+          description: A successful GraphQL response from User Service

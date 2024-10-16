@@ -9,7 +9,8 @@ async function startServer() {
   });
 
   const server = new ApolloServer({ schema });
-  server.listen({ port: 4003 }).then(({ url }) => {
+  const port = process.env.PORT || 4000;
+  server.listen({ port }).then(({ url }) => {
     console.log(`🚀 Task Service ready at ${url}`);
   });
 }

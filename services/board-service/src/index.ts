@@ -9,7 +9,8 @@ async function startServer() {
   });
 
   const server = new ApolloServer({ schema });
-  server.listen({ port: 4002 }).then(({ url }) => {
+  const port = process.env.PORT || 4000;
+  server.listen({ port}).then(({ url }) => {
     console.log(`🚀 Board Service ready at ${url}`);
   });
 }

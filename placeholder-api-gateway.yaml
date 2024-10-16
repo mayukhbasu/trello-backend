@@ -1,0 +1,12 @@
+swagger: "2.0"
+info:
+  title: "Placeholder API Gateway"
+  version: "1.0.0"
+paths:
+  /:
+    get:
+      summary: "Placeholder response"
+      operationId: placeholderOperation
+      responses:
+        "200":
+          description: "A successful response"

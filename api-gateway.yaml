@@ -46,7 +46,7 @@ paths:
         '200':
           description: "A successful GraphQL response from Task Service"
       security:
-        - google_id_token: []  # Added Google SSO token-based security
+        - api_key: []
 
   /board:
     options:
@@ -88,7 +88,7 @@ paths:
         '200':
           description: "A successful GraphQL response from Board Service"
       security:
-        - google_id_token: []  # Added Google SSO token-based security
+        - api_key: []
 
   /user:
     options:
@@ -130,13 +130,4 @@ paths:
         '200':
           description: "A successful GraphQL response from User Service"
       security:
-        - google_id_token: []  # Added Google SSO token-based security
-
-securityDefinitions:
-  google_id_token:
-    type: "oauth2"
-    authorizationUrl: ""
-    flow: "implicit"
-    x-google-issuer: "https://accounts.google.com"
-    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
-    x-google-audiences: "104926798924-0m8a4e0l1elhus477miu6er0n8r1forf.apps.googleusercontent.com"  # Replace with your actual Google OAuth client ID
+        - api_key: []

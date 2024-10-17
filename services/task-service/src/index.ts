@@ -8,8 +8,16 @@ async function startServer() {
     resolvers: [TaskResolver],
   });
 
-  const server = new ApolloServer({ schema });
-  const port = process.env.PORT || 4000;
+  // Adding CORS configuration to the Apollo Server
+  const server = new ApolloServer({
+    schema,
+    cors: {
+      origin: ['http://localhost:3000'], // Allow specific origins
+      credentials: true, // Allow credentials such as cookies or authentication headers
+    },
+  });
+
+  const port = process.env.PORT || 4003;
   server.listen({ port }).then(({ url }) => {
     console.log(`🚀 Task Service ready at ${url}`);
   });

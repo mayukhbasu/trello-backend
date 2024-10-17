@@ -10,6 +10,8 @@ paths:
     options:
       summary: "CORS support for Task Service"
       operationId: "taskServiceOptions"
+      produces:
+        - application/json
       responses:
         '204':
           description: "CORS preflight response"
@@ -27,7 +29,7 @@ paths:
         address: https://task-service-104926798924.us-central1.run.app
     post:
       summary: "Task Service"
-      operationId: taskService
+      operationId: "taskService"
       x-google-backend:
         address: https://task-service-104926798924.us-central1.run.app
       consumes:
@@ -56,6 +58,8 @@ paths:
     options:
       summary: "CORS support for Board Service"
       operationId: "boardServiceOptions"
+      produces:
+        - application/json
       responses:
         '204':
           description: "CORS preflight response"
@@ -73,7 +77,7 @@ paths:
         address: https://board-service-104926798924.us-central1.run.app
     post:
       summary: "Board Service"
-      operationId: boardService
+      operationId: "boardService"
       x-google-backend:
         address: https://board-service-104926798924.us-central1.run.app
       consumes:
@@ -102,6 +106,8 @@ paths:
     options:
       summary: "CORS support for User Service"
       operationId: "userServiceOptions"
+      produces:
+        - application/json
       responses:
         '204':
           description: "CORS preflight response"
@@ -119,7 +125,7 @@ paths:
         address: https://user-service-104926798924.us-central1.run.app
     post:
       summary: "User Service"
-      operationId: userService
+      operationId: "userService"
       x-google-backend:
         address: https://user-service-104926798924.us-central1.run.app
       consumes:

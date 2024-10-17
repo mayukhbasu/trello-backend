@@ -7,7 +7,7 @@ const HeaderNavbar: React.FC = () => {
     <Navbar expand="lg" bg="dark" variant="dark" sticky="top" className="shadow-sm">
       <Container>
         <Navbar.Brand href="#">
-          <i className="bi bi-house-door"></i> MyWebsite
+          <i className="bi bi-house-door"></i> Trello
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbar-nav" />
         <Navbar.Collapse id="navbar-nav">

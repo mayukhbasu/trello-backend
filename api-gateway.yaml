@@ -1,10 +1,22 @@
 swagger: "2.0"
 info:
   title: "Trello GraphQL Backend API"
-  description: "API Gateway for Task, Board, and User services"
+  description: "API Gateway for Task, Board, and User services with Google OAuth2 SSO"
   version: "1.0.0"
 schemes:
   - https
+
+# Security Definitions for Google OAuth2
+securityDefinitions:
+  google_oauth2:
+    type: oauth2
+    flow: "implicit"
+    authorizationUrl: "https://accounts.google.com/o/oauth2/auth"
+    scopes:
+      openid: "OpenID Connect for user identity"
+      email: "Access to email address"
+      profile: "Access to profile information"
+
 paths:
   /task:
     options:
@@ -46,7 +58,7 @@ paths:
         '200':
           description: "A successful GraphQL response from Task Service"
       security:
-        - api_key: []
+        - google_oauth2: []
 
   /board:
     options:
@@ -88,7 +100,7 @@ paths:
         '200':
           description: "A successful GraphQL response from Board Service"
       security:
-        - api_key: []
+        - google_oauth2: []
 
   /user:
     options:
@@ -130,4 +142,8 @@ paths:
         '200':
           description: "A successful GraphQL response from User Service"
       security:
-        - api_key: []
+        - google_oauth2: []
+
+# Security section to apply Google OAuth2 to all paths
+security:
+  - google_oauth2: []

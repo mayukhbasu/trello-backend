@@ -131,9 +131,3 @@ paths:
           description: "A successful GraphQL response from User Service"
       security:
         - api_key: []
-
-securityDefinitions:
-  api_key:
-    type: apiKey
-    name: X-API-KEY
-    in: header

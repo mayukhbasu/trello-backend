@@ -109,7 +109,7 @@ jobs:
                     description: "A successful response"' > new-api-gateway.yaml
 
       # Step 9: Detach API Gateway from current config by pointing to a placeholder
-      - name: Detach API Gateway from current config
+      - name: Detach API Gateway from current config with placeholder
         run: |
           echo 'swagger: "2.0"
           info:
@@ -120,6 +120,8 @@ jobs:
               get:
                 summary: "Placeholder response"
                 operationId: placeholderOperation
+                x-google-backend:
+                  address: https://httpbin.org/get
                 responses:
                   "200":
                     description: "A successful response"' > placeholder-api-gateway.yaml

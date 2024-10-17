@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline for GraphQL APIs
 
 on:
   push:
@@ -21,116 +21,112 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      # Step 3: Configure gcloud CLI
+      # Step 3: Set up Google Cloud CLI
       - name: Set up Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # Step 4: Configure Docker to authenticate with GCR
+      # Step 4: Configure Docker to use gcloud for authentication
       - name: Configure Docker to use gcloud for authentication
         run: |
           gcloud auth configure-docker --quiet
 
-      # Step 5: Build and push Docker images to GCR
+      # Step 5: Build and push Docker images for GraphQL APIs to GCR
       - name: Build and push user-service Docker image
         run: |
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service ./services/user-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service
-
-      - name: Build and push board-service Docker image
-        run: |
-          docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service ./services/board-service
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service
 
       - name: Build and push task-service Docker image
         run: |
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service ./services/task-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service
 
-      # Step 6: Deploy services to Google Cloud Run
+      - name: Build and push board-service Docker image
+        run: |
+          docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service ./services/board-service
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service
+
+      # Step 6: Deploy the APIs to Google Cloud Run
       - name: Deploy user-service to Cloud Run
         run: |
           gcloud run deploy user-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
-
-      - name: Deploy board-service to Cloud Run
-        run: |
-          gcloud run deploy board-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
       - name: Deploy task-service to Cloud Run
         run: |
           gcloud run deploy task-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
+      - name: Deploy board-service to Cloud Run
+        run: |
+          gcloud run deploy board-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
+
       # Step 7: Retrieve URLs for Cloud Run services
-      - name: Retrieve URLs for Cloud Run services
+      - name: Retrieve Cloud Run URLs
+        id: urls
         run: |
           USER_URL=$(gcloud run services describe user-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
           TASK_URL=$(gcloud run services describe task-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
           BOARD_URL=$(gcloud run services describe board-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
-          echo "User URL: $USER_URL"
-          echo "Task URL: $TASK_URL"
-          echo "Board URL: $BOARD_URL"
           echo "::set-output name=USER_URL::$USER_URL"
           echo "::set-output name=TASK_URL::$TASK_URL"
           echo "::set-output name=BOARD_URL::$BOARD_URL"
 
-      # Step 8: Dynamically create OpenAPI spec with service URLs
+      # Step 8: Update the API Gateway with new service URLs
       - name: Dynamically create OpenAPI spec with service URLs
         run: |
           echo 'swagger: "2.0"
           info:
-            title: "Trello Backend API"
+            title: "GraphQL API Gateway"
             version: "1.0.0"
           paths:
             /user:
-              get:
+              post:
                 summary: "User Service"
                 operationId: userService
                 x-google-backend:
-                  address: '${USER_URL}'
+                  address: '${{ steps.urls.outputs.USER_URL }}'
                 responses:
                   "200":
                     description: "A successful response"
             /task:
-              get:
+              post:
                 summary: "Task Service"
                 operationId: taskService
                 x-google-backend:
-                  address: '${TASK_URL}'
+                  address: '${{ steps.urls.outputs.TASK_URL }}'
                 responses:
                   "200":
                     description: "A successful response"
             /board:
-              get:
+              post:
                 summary: "Board Service"
                 operationId: boardService
                 x-google-backend:
-                  address: '${BOARD_URL}'
+                  address: '${{ steps.urls.outputs.BOARD_URL }}'
                 responses:
                   "200":
                     description: "A successful response"' > new-api-gateway.yaml
 
-      # Step 9: Check if API Gateway config exists, delete if it does
-      - name: Delete API Gateway config if it exists
+      - name: Update API Gateway configuration
         run: |
-          if gcloud api-gateway api-configs describe trello-backend-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }}; then
-            gcloud api-gateway api-configs delete trello-backend-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
-          fi
-
-      # Step 10: Create API Gateway configuration
-      - name: Create API Gateway configuration
-        run: |
-          gcloud api-gateway api-configs create trello-backend-config \
-              --api=trello-backend-api \
+          gcloud api-gateway api-configs create graphql-backend-config \
+              --api=graphql-backend-api \
               --openapi-spec=new-api-gateway.yaml \
               --project=${{ secrets.GCP_PROJECT_ID }} \
               --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com
 
-      # Step 11: Deploy API Gateway
       - name: Deploy API Gateway
         run: |
-          gcloud api-gateway gateways update trello-backend-gateway \
-              --api=trello-backend-api \
-              --api-config=trello-backend-config \
+          gcloud api-gateway gateways update graphql-backend-gateway \
+              --api=graphql-backend-api \
+              --api-config=graphql-backend-config \
               --location=${{ secrets.GCP_REGION }} \
               --project=${{ secrets.GCP_PROJECT_ID }}
+
+      # Step 9: Run tests (optional)
+      - name: Run API tests
+        run: |
+          curl -X POST ${{ steps.urls.outputs.USER_URL }} -d '{"query":"{ helloUser }"}'
+          curl -X POST ${{ steps.urls.outputs.TASK_URL }} -d '{"query":"{ helloTask }"}'
+          curl -X POST ${{ steps.urls.outputs.BOARD_URL }} -d '{"query":"{ helloBoard }"}'

@@ -45,16 +45,6 @@ paths:
       responses:
         '200':
           description: "A successful GraphQL response from Task Service"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-              default: "*"
-            Access-Control-Allow-Methods:
-              type: string
-              default: "POST"
-            Access-Control-Allow-Headers:
-              type: string
-              default: "Content-Type, Authorization"
       security:
         - api_key: []
 
@@ -97,16 +87,6 @@ paths:
       responses:
         '200':
           description: "A successful GraphQL response from Board Service"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-              default: "*"
-            Access-Control-Allow-Methods:
-              type: string
-              default: "POST"
-            Access-Control-Allow-Headers:
-              type: string
-              default: "Content-Type, Authorization"
       security:
         - api_key: []
 
@@ -149,21 +129,5 @@ paths:
       responses:
         '200':
           description: "A successful GraphQL response from User Service"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-              default: "*"
-            Access-Control-Allow-Methods:
-              type: string
-              default: "POST"
-            Access-Control-Allow-Headers:
-              type: string
-              default: "Content-Type, Authorization"
       security:
         - api_key: []
-
-securityDefinitions:
-  api_key:
-    type: apiKey
-    name: X-API-KEY
-    in: header

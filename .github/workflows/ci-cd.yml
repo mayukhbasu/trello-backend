@@ -126,10 +126,12 @@ jobs:
                   "200":
                     description: "A successful response"' > placeholder-api-gateway.yaml
           
-          gcloud api-gateway api-configs create placeholder-config \
+          if ! gcloud api-gateway api-configs describe placeholder-config --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }}; then
+            gcloud api-gateway api-configs create placeholder-config \
               --api=trello-backend-api \
               --openapi-spec=placeholder-api-gateway.yaml \
               --project=${{ secrets.GCP_PROJECT_ID }}
+          fi
 
           gcloud api-gateway gateways update trello-backend-gateway \
               --api=trello-backend-api \

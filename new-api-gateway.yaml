@@ -1,18 +1,38 @@
 swagger: "2.0"
 info:
   title: "Trello GraphQL Backend API"
-  description: "API Gateway for Task, Board, and User services"
+  description: "API Gateway for Task, Board, and User services with CORS support"
   version: "1.0.0"
 schemes:
   - https
 paths:
   /task:
+    options:
+      summary: "CORS support for Task Service"
+      operationId: "taskServiceOptions"
+      responses:
+        '204':
+          description: "CORS preflight response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+            Access-Control-Allow-Methods:
+              type: string
+              default: "POST, OPTIONS"
+            Access-Control-Allow-Headers:
+              type: string
+              default: "Content-Type, Authorization"
+      x-google-backend:
+        address: https://task-service-104926798924.us-central1.run.app
     post:
       summary: "Task Service"
       operationId: taskService
       x-google-backend:
-        address: https://task-service-104926798924.us-central1.run.app/graphql
+        address: https://task-service-104926798924.us-central1.run.app
       consumes:
+        - application/json
+      produces:
         - application/json
       parameters:
         - in: body
@@ -24,14 +44,41 @@ paths:
                 type: string
       responses:
         '200':
-          description: A successful GraphQL response from Task Service
+          description: "A successful GraphQL response from Task Service"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+      security:
+        - api_key: []
+
   /board:
+    options:
+      summary: "CORS support for Board Service"
+      operationId: "boardServiceOptions"
+      responses:
+        '204':
+          description: "CORS preflight response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+            Access-Control-Allow-Methods:
+              type: string
+              default: "POST, OPTIONS"
+            Access-Control-Allow-Headers:
+              type: string
+              default: "Content-Type, Authorization"
+      x-google-backend:
+        address: https://board-service-104926798924.us-central1.run.app
     post:
       summary: "Board Service"
       operationId: boardService
       x-google-backend:
-        address: https://board-service-104926798924.us-central1.run.app/graphql
+        address: https://board-service-104926798924.us-central1.run.app
       consumes:
+        - application/json
+      produces:
         - application/json
       parameters:
         - in: body
@@ -43,14 +90,41 @@ paths:
                 type: string
       responses:
         '200':
-          description: A successful GraphQL response from Board Service
+          description: "A successful GraphQL response from Board Service"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+      security:
+        - api_key: []
+
   /user:
+    options:
+      summary: "CORS support for User Service"
+      operationId: "userServiceOptions"
+      responses:
+        '204':
+          description: "CORS preflight response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+            Access-Control-Allow-Methods:
+              type: string
+              default: "POST, OPTIONS"
+            Access-Control-Allow-Headers:
+              type: string
+              default: "Content-Type, Authorization"
+      x-google-backend:
+        address: https://user-service-104926798924.us-central1.run.app
     post:
       summary: "User Service"
       operationId: userService
       x-google-backend:
-        address: https://user-service-104926798924.us-central1.run.app/graphql
+        address: https://user-service-104926798924.us-central1.run.app
       consumes:
+        - application/json
+      produces:
         - application/json
       parameters:
         - in: body
@@ -62,4 +136,16 @@ paths:
                 type: string
       responses:
         '200':
-          description: A successful GraphQL response from User Service
+          description: "A successful GraphQL response from User Service"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+      security:
+        - api_key: []
+
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: X-API-KEY
+    in: header

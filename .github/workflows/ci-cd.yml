@@ -68,11 +68,11 @@ jobs:
           USER_URL=$(gcloud run services describe user-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
           TASK_URL=$(gcloud run services describe task-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
           BOARD_URL=$(gcloud run services describe board-service --platform managed --region ${{ secrets.GCP_REGION }} --format='value(status.url)')
-          echo "::set-output name=USER_URL::$USER_URL"
-          echo "::set-output name=TASK_URL::$TASK_URL"
-          echo "::set-output name=BOARD_URL::$BOARD_URL"
+          echo "USER_URL=$USER_URL" >> $GITHUB_ENV
+          echo "TASK_URL=$TASK_URL" >> $GITHUB_ENV
+          echo "BOARD_URL=$BOARD_URL" >> $GITHUB_ENV
 
-      # Step 8: Update the API Gateway with new service URLs
+      # Step 8: Dynamically create OpenAPI spec with service URLs
       - name: Dynamically create OpenAPI spec with service URLs
         run: |
           echo 'swagger: "2.0"
@@ -85,7 +85,7 @@ jobs:
                 summary: "User Service"
                 operationId: userService
                 x-google-backend:
-                  address: '${{ steps.urls.outputs.USER_URL }}'
+                  address: '${USER_URL}'
                 responses:
                   "200":
                     description: "A successful response"
@@ -94,7 +94,7 @@ jobs:
                 summary: "Task Service"
                 operationId: taskService
                 x-google-backend:
-                  address: '${{ steps.urls.outputs.TASK_URL }}'
+                  address: '${TASK_URL}'
                 responses:
                   "200":
                     description: "A successful response"
@@ -103,12 +103,23 @@ jobs:
                 summary: "Board Service"
                 operationId: boardService
                 x-google-backend:
-                  address: '${{ steps.urls.outputs.BOARD_URL }}'
+                  address: '${BOARD_URL}'
                 responses:
                   "200":
                     description: "A successful response"' > new-api-gateway.yaml
 
-      - name: Update API Gateway configuration
+      # Step 9: Delete API Gateway config if it exists
+      - name: Delete API Gateway config if it exists
+        run: |
+          if gcloud api-gateway api-configs describe graphql-backend-config \
+            --api=graphql-backend-api \
+            --project=${{ secrets.GCP_PROJECT_ID }}; then
+            gcloud api-gateway api-configs delete graphql-backend-config \
+              --api=graphql-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
+          fi
+
+      # Step 10: Create the new API Gateway configuration
+      - name: Create API Gateway configuration
         run: |
           gcloud api-gateway api-configs create graphql-backend-config \
               --api=graphql-backend-api \
@@ -116,6 +127,7 @@ jobs:
               --project=${{ secrets.GCP_PROJECT_ID }} \
               --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com
 
+      # Step 11: Deploy API Gateway with the new configuration
       - name: Deploy API Gateway
         run: |
           gcloud api-gateway gateways update graphql-backend-gateway \
@@ -124,9 +136,9 @@ jobs:
               --location=${{ secrets.GCP_REGION }} \
               --project=${{ secrets.GCP_PROJECT_ID }}
 
-      # Step 9: Run tests (optional)
+      # Step 12: Run tests (optional)
       - name: Run API tests
         run: |
-          curl -X POST ${{ steps.urls.outputs.USER_URL }} -d '{"query":"{ helloUser }"}'
-          curl -X POST ${{ steps.urls.outputs.TASK_URL }} -d '{"query":"{ helloTask }"}'
-          curl -X POST ${{ steps.urls.outputs.BOARD_URL }} -d '{"query":"{ helloBoard }"}'
+          curl -X POST $USER_URL -d '{"query":"{ helloUser }"}'
+          curl -X POST $TASK_URL -d '{"query":"{ helloTask }"}'
+          curl -X POST $BOARD_URL -d '{"query":"{ helloBoard }"}'

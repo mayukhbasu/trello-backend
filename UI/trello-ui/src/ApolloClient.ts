@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 
 const client = new ApolloClient({
-  uri: 'https://user-service-104926798924.us-central1.run.app', // Replace with your API Gateway URL
+  uri: 'https://trello-backend-gateway-1c7apg7g.uc.gateway.dev/user', // Replace with your API Gateway URL
   cache: new InMemoryCache(),
 });
 

@@ -8,7 +8,7 @@ schemes:
 paths:
   /task:
     options:
-      summary: "CORS preflight for Task Service"
+      summary: "CORS support for Task Service"
       operationId: "taskServiceOptions"
       responses:
         '204':
@@ -19,7 +19,7 @@ paths:
               default: "*"
             Access-Control-Allow-Methods:
               type: string
-              default: "POST, OPTIONS"
+              default: "GET, POST, OPTIONS"
             Access-Control-Allow-Headers:
               type: string
               default: "Content-Type, Authorization"
@@ -50,7 +50,7 @@ paths:
 
   /board:
     options:
-      summary: "CORS preflight for Board Service"
+      summary: "CORS support for Board Service"
       operationId: "boardServiceOptions"
       responses:
         '204':
@@ -61,7 +61,7 @@ paths:
               default: "*"
             Access-Control-Allow-Methods:
               type: string
-              default: "POST, OPTIONS"
+              default: "GET, POST, OPTIONS"
             Access-Control-Allow-Headers:
               type: string
               default: "Content-Type, Authorization"
@@ -92,7 +92,7 @@ paths:
 
   /user:
     options:
-      summary: "CORS preflight for User Service"
+      summary: "CORS support for User Service"
       operationId: "userServiceOptions"
       responses:
         '204':
@@ -103,7 +103,7 @@ paths:
               default: "*"
             Access-Control-Allow-Methods:
               type: string
-              default: "POST, OPTIONS"
+              default: "GET, POST, OPTIONS"
             Access-Control-Allow-Headers:
               type: string
               default: "Content-Type, Authorization"

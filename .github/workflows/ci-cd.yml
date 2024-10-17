@@ -61,26 +61,32 @@ jobs:
         run: |
           gcloud run deploy board-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
-      # Step 7: Use a static OpenAPI spec file for API Gateway configuration
-      - name: Deploy API Gateway with static OpenAPI spec
+      # Step 7: Generate a unique API Gateway config name
+      - name: Generate unique API Gateway config name
         run: |
-          gcloud api-gateway api-configs create trello-backend-config \
+          TIMESTAMP=$(date +%s)  # Use timestamp to make it unique
+          echo "CONFIG_NAME=trello-backend-config-$TIMESTAMP" >> $GITHUB_ENV  # Save it as an environment variable
+
+      # Step 8: Deploy API Gateway with the dynamically generated config name
+      - name: Deploy API Gateway with dynamic config
+        run: |
+          gcloud api-gateway api-configs create $CONFIG_NAME \
               --api=trello-backend-api \
               --openapi-spec=api-gateway.yaml \
               --project=${{ secrets.GCP_PROJECT_ID }}
 
-      # Step 8: Deploy API Gateway with the new configuration
+      # Step 9: Deploy API Gateway with the new configuration
       - name: Deploy API Gateway
         run: |
           gcloud api-gateway gateways update trello-backend-gateway \
               --api=trello-backend-api \
-              --api-config=trello-backend-config \
+              --api-config=$CONFIG_NAME \
               --location=${{ secrets.GCP_REGION }} \
               --project=${{ secrets.GCP_PROJECT_ID }}
 
-      # Step 9: Run tests (optional)
+      # Step 10: Run tests (optional)
       - name: Run API tests
         run: |
-          curl -X POST https://<user-service-url> -d '{"query":"{ helloUser }"}'
-          curl -X POST https://<task-service-url> -d '{"query":"{ helloTask }"}'
-          curl -X POST https://<board-service-url> -d '{"query":"{ helloBoard }"}'
+          curl -X POST https://board-service-104926798924.us-central1.run.app -d '{"query":"{ helloUser }"}'
+          curl -X POST https://task-service-104926798924.us-central1.run.app -d '{"query":"{ helloTask }"}'
+          curl -X POST /https://user-service-104926798924.us-central1.run.app -d '{"query":"{ helloBoard }"}'

@@ -23,24 +23,7 @@ const HeaderNavbar: React.FC = () => {
             </Nav.Link>
 
             {/* Sign Up Button - primary colored */}
-            <Button
-              variant="primary"
-              href="#sign-up"
-              className="ms-3"
-              style={{ borderRadius: '50px', padding: '0.5rem 1.5rem' }}
-            >
-              Sign Up
-            </Button>
-
-            {/* Sign In Button - outlined light */}
-            <Button
-              variant="outline-light"
-              href="#sign-in"
-              className="ms-3"
-              style={{ borderRadius: '50px', padding: '0.5rem 1.5rem' }}
-            >
-              Sign In
-            </Button>
+            
           </Nav>
         </Navbar.Collapse>
       </Container>

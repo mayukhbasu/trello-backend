@@ -1,0 +1,84 @@
+/* HomePage.css */
+
+/* Hero Section - Single Color Theme */
+.hero-section {
+  background-color: #1f1f1f;
+  color: #fff;
+  height: 100vh;
+  display: flex;
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+}
+
+.hero-section p {
+  font-size: 1rem;
+}
+
+.button-group .animated-button {
+  border-radius: 50px;
+  transition: all 0.3s ease-in-out;
+}
+
+.button-group .animated-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Features Section */
+.features-section {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.features-section h2 {
+  font-size: 1.75rem;
+}
+
+.feature-card {
+  transition: all 0.3s ease-in-out;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card .card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.feature-card .card-text {
+  font-size: 0.9rem;
+}
+
+/* Footer Styling */
+footer {
+  background-color: #1f1f1f;
+  color: #fff;
+}
+
+footer h5 {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+footer ul {
+  padding-left: 0;
+}
+
+footer ul li {
+  font-size: 0.85rem;
+}
+
+footer ul li a {
+  color: #ccc;
+  text-decoration: none;
+}
+
+footer ul li a:hover {
+  color: #fff;
+}

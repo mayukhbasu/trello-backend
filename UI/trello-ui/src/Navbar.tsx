@@ -1,6 +1,5 @@
-// src/components/MyNavbar.tsx
 import React from 'react';
-import { Navbar, Nav, NavDropdown, Container } from 'react-bootstrap';
+import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 
 const HeaderNavbar: React.FC = () => {
   return (
@@ -15,12 +14,9 @@ const HeaderNavbar: React.FC = () => {
             <Nav.Link href="#home">Home</Nav.Link>
             <Nav.Link href="#features">Features</Nav.Link>
             <Nav.Link href="#pricing">Pricing</Nav.Link>
-            <NavDropdown title="More" id="basic-nav-dropdown">
-              <NavDropdown.Item href="#about">About</NavDropdown.Item>
-              <NavDropdown.Item href="#contact">Contact</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#blog">Blog</NavDropdown.Item>
-            </NavDropdown>
+            <Button variant="outline-light" href="#sign-in" className="ms-3">
+              Sign In
+            </Button>
           </Nav>
         </Navbar.Collapse>
       </Container>

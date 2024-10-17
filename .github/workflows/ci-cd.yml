@@ -108,7 +108,34 @@ jobs:
                   "200":
                     description: "A successful response"' > new-api-gateway.yaml
 
-      # Step 9: Delete API Gateway config if it exists
+      # Step 9: Detach API Gateway from current config by pointing to a placeholder
+      - name: Detach API Gateway from current config
+        run: |
+          echo 'swagger: "2.0"
+          info:
+            title: "Placeholder API Gateway"
+            version: "1.0.0"
+          paths:
+            /:
+              get:
+                summary: "Placeholder response"
+                operationId: placeholderOperation
+                responses:
+                  "200":
+                    description: "A successful response"' > placeholder-api-gateway.yaml
+          
+          gcloud api-gateway api-configs create placeholder-config \
+              --api=trello-backend-api \
+              --openapi-spec=placeholder-api-gateway.yaml \
+              --project=${{ secrets.GCP_PROJECT_ID }}
+
+          gcloud api-gateway gateways update trello-backend-gateway \
+              --api=trello-backend-api \
+              --api-config=placeholder-config \
+              --location=${{ secrets.GCP_REGION }} \
+              --project=${{ secrets.GCP_PROJECT_ID }}
+
+      # Step 10: Delete API Gateway config if it exists
       - name: Delete API Gateway config if it exists
         run: |
           if gcloud api-gateway api-configs describe trello-backend-config \
@@ -118,7 +145,7 @@ jobs:
               --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
           fi
 
-      # Step 10: Create the new API Gateway configuration
+      # Step 11: Create the new API Gateway configuration
       - name: Create API Gateway configuration
         run: |
           gcloud api-gateway api-configs create trello-backend-config \
@@ -127,7 +154,7 @@ jobs:
               --project=${{ secrets.GCP_PROJECT_ID }} \
               --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com
 
-      # Step 11: Deploy API Gateway with the new configuration
+      # Step 12: Deploy API Gateway with the new configuration
       - name: Deploy API Gateway
         run: |
           gcloud api-gateway gateways update trello-backend-gateway \
@@ -136,7 +163,7 @@ jobs:
               --location=${{ secrets.GCP_REGION }} \
               --project=${{ secrets.GCP_PROJECT_ID }}
 
-      # Step 12: Run tests (optional)
+      # Step 13: Run tests (optional)
       - name: Run API tests
         run: |
           curl -X POST $USER_URL -d '{"query":"{ helloUser }"}'

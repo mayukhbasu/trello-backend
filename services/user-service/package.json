@@ -9,6 +9,7 @@
   "dependencies": {
     "@apollo/subgraph": "^2.9.2",
     "apollo-server": "^3.10.4",
+    "cors": "^2.8.5",
     "graphql": "^16.6.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.9.1",

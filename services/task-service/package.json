@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "apollo-server": "^3.10.4",
+    "cors": "^2.8.5",
     "graphql": "^16.8.1",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.9.1",

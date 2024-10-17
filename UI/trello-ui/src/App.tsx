@@ -1,13 +1,14 @@
 // src/App.tsx
-import React from 'react';
 import './App.css';
 import Users from './Users';
-import Navbar from './Navbar';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import HeaderNavbar from './Navbar';
 
 function App() {
   return (
     <div className="App">
-      <Navbar />
+      <HeaderNavbar/>
       <header className="App-header">
         <Users />
       </header>

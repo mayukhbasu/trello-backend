@@ -111,18 +111,18 @@ jobs:
       # Step 9: Delete API Gateway config if it exists
       - name: Delete API Gateway config if it exists
         run: |
-          if gcloud api-gateway api-configs describe graphql-backend-config \
-            --api=graphql-backend-api \
+          if gcloud api-gateway api-configs describe trello-backend-config \
+            --api=trello-backend-api \
             --project=${{ secrets.GCP_PROJECT_ID }}; then
-            gcloud api-gateway api-configs delete graphql-backend-config \
-              --api=graphql-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
+            gcloud api-gateway api-configs delete trello-backend-config \
+              --api=trello-backend-api --project=${{ secrets.GCP_PROJECT_ID }} --quiet
           fi
 
       # Step 10: Create the new API Gateway configuration
       - name: Create API Gateway configuration
         run: |
-          gcloud api-gateway api-configs create graphql-backend-config \
-              --api=graphql-backend-api \
+          gcloud api-gateway api-configs create trello-backend-config \
+              --api=trello-backend-api \
               --openapi-spec=new-api-gateway.yaml \
               --project=${{ secrets.GCP_PROJECT_ID }} \
               --backend-auth-service-account=${{ secrets.GCP_PROJECT_ID }}@appspot.gserviceaccount.com
@@ -130,9 +130,9 @@ jobs:
       # Step 11: Deploy API Gateway with the new configuration
       - name: Deploy API Gateway
         run: |
-          gcloud api-gateway gateways update graphql-backend-gateway \
-              --api=graphql-backend-api \
-              --api-config=graphql-backend-config \
+          gcloud api-gateway gateways update trello-backend-gateway \
+              --api=trello-backend-api \
+              --api-config=trello-backend-config \
               --location=${{ secrets.GCP_REGION }} \
               --project=${{ secrets.GCP_PROJECT_ID }}
 

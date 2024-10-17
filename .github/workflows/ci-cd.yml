@@ -84,9 +84,3 @@ jobs:
               --location=${{ secrets.GCP_REGION }} \
               --project=${{ secrets.GCP_PROJECT_ID }}
 
-      # Step 10: Run tests (optional)
-      - name: Run API tests
-        run: |
-          curl -X POST https://board-service-104926798924.us-central1.run.app -d '{"query":"{ helloUser }"}'
-          curl -X POST https://task-service-104926798924.us-central1.run.app -d '{"query":"{ helloTask }"}'
-          curl -X POST /https://user-service-104926798924.us-central1.run.app -d '{"query":"{ helloBoard }"}'

@@ -1,17 +1,15 @@
 swagger: "2.0"
 info:
   title: "Trello GraphQL Backend API"
-  description: "API Gateway for Task, Board, and User services with CORS support"
+  description: "API Gateway for Task, Board, and User services"
   version: "1.0.0"
 schemes:
   - https
 paths:
   /task:
     options:
-      summary: "CORS support for Task Service"
+      summary: "CORS preflight for Task Service"
       operationId: "taskServiceOptions"
-      produces:
-        - application/json
       responses:
         '204':
           description: "CORS preflight response"
@@ -47,19 +45,13 @@ paths:
       responses:
         '200':
           description: "A successful GraphQL response from Task Service"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-              default: "*"
       security:
         - api_key: []
 
   /board:
     options:
-      summary: "CORS support for Board Service"
+      summary: "CORS preflight for Board Service"
       operationId: "boardServiceOptions"
-      produces:
-        - application/json
       responses:
         '204':
           description: "CORS preflight response"
@@ -95,19 +87,13 @@ paths:
       responses:
         '200':
           description: "A successful GraphQL response from Board Service"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-              default: "*"
       security:
         - api_key: []
 
   /user:
     options:
-      summary: "CORS support for User Service"
+      summary: "CORS preflight for User Service"
       operationId: "userServiceOptions"
-      produces:
-        - application/json
       responses:
         '204':
           description: "CORS preflight response"
@@ -143,10 +129,6 @@ paths:
       responses:
         '200':
           description: "A successful GraphQL response from User Service"
-          headers:
-            Access-Control-Allow-Origin:
-              type: string
-              default: "*"
       security:
         - api_key: []
 

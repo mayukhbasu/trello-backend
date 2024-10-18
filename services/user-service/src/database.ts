@@ -7,7 +7,7 @@ import { config } from 'dotenv';
 config();
 
 // Use the environment variable for the MongoDB URI
-const uri = process.env.MONGODB_URI || '';
+const uri = 'mongodb+srv://rishiwhite11:nataliE%402447@trello-db.urkee.mongodb.net/?retryWrites=true&w=majority&appName=trello-db';
 
 if (!uri) {
   throw new Error('MongoDB connection string not found in environment variables');

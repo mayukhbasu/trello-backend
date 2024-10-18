@@ -2,12 +2,13 @@ import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/UserResolver';
 import { ApolloServer } from 'apollo-server';
+import { connectDatabase } from './database';
 
 async function startServer() {
   const schema = await buildSchema({
     resolvers: [UserResolver]
   });
-
+  await connectDatabase();
   // Adding CORS configuration to the Apollo Server
   const server = new ApolloServer({
     schema,

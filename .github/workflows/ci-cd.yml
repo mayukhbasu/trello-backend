@@ -54,10 +54,10 @@ jobs:
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service ./services/board-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service
 
-      # # Step 8: Deploy the APIs to Google Cloud Run
-      # - name: Deploy user-service to Cloud Run
-        # run: |
-        #   gcloud run deploy user-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
+      # Step 8: Deploy the APIs to Google Cloud Run
+      - name: Deploy user-service to Cloud Run
+        run: |
+          gcloud run deploy user-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
 
       - name: Deploy task-service to Cloud Run
         run: |

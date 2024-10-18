@@ -1,0 +1,29 @@
+swagger: "2.0"
+info:
+  title: "Placeholder API Gateway"
+  description: "Temporary placeholder configuration for API Gateway"
+  version: "1.0.0"
+schemes:
+  - https
+paths:
+  /:
+    get:
+      summary: "Placeholder response"
+      operationId: placeholderOperation
+      x-google-backend:
+        address: https://httpbin.org/get  # This is just a dummy address for placeholder purposes.
+      responses:
+        '200':
+          description: "A successful response from the placeholder backend"
+          schema:
+            type: string
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "*"
+            Access-Control-Allow-Methods:
+              type: string
+              default: "GET, OPTIONS"
+            Access-Control-Allow-Headers:
+              type: string
+              default: "Content-Type, Authorization"

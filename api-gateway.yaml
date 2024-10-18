@@ -16,6 +16,7 @@ securityDefinitions:
       openid: "OpenID Connect for user identity"
       email: "Access to email address"
       profile: "Access to profile information"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"  # JWKS URI for Google OAuth 2.0
 
 paths:
   /task:

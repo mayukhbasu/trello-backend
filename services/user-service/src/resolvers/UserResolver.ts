@@ -6,17 +6,13 @@ import { IsEmail, Length } from 'class-validator';
 export class UserResolver {
 
   @Query(() => [User])
-async getUsers(): Promise<User[]> {
-  try {
-    console.log("Fetching users...");
-    const users = await UserModel.find();
-    console.log("Users fetched successfully:", users);
-    return users;
-  } catch (err) {
-    console.error("Error fetching users:", err);
-    throw new Error('Error fetching users: ' + err);
+  async getUsers(): Promise<User[]> {
+    try {
+      return await UserModel.find(); // Fetch all users from the database
+    } catch (err) {
+      throw new Error('Error fetching users: ' + err);
+    }
   }
-}
 
   @Mutation(() => User)
   async saveUser(

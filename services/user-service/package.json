@@ -4,12 +4,14 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "nodemon --watch src --exec ts-node src/index.ts"
   },
   "dependencies": {
     "@apollo/subgraph": "^2.9.2",
     "@typegoose/typegoose": "^12.8.0",
     "apollo-server": "^3.10.4",
+    "class-validator": "^0.14.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "graphql": "^16.9.0",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.7.18",
-    "@types/uuid": "^9.0.1"
+    "@types/uuid": "^9.0.1",
+    "nodemon": "^2.0.22"
   }
 }

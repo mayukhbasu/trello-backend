@@ -38,6 +38,11 @@ jobs:
         with:
           node-version: '18'
 
+      # Step 6: Set environment variables (MONGODB_URI)
+      - name: Set environment variables
+        run: |
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> $GITHUB_ENV  # Use the MONGODB_URI secret
+
       # Step 7: Build and push Docker images for GraphQL APIs to GCR
       - name: Build and push user-service Docker image
         run: |
@@ -54,18 +59,24 @@ jobs:
           docker build --platform linux/amd64 -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service ./services/board-service
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service
 
-      # Step 8: Deploy the APIs to Google Cloud Run
+      # Step 8: Deploy the APIs to Google Cloud Run with MONGODB_URI
       - name: Deploy user-service to Cloud Run
         run: |
-          gcloud run deploy user-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
+          gcloud run deploy user-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/user-service \
+            --platform managed --region ${{ secrets.GCP_REGION }} \
+            --allow-unauthenticated --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }}"
 
       - name: Deploy task-service to Cloud Run
         run: |
-          gcloud run deploy task-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
+          gcloud run deploy task-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/task-service \
+            --platform managed --region ${{ secrets.GCP_REGION }} \
+            --allow-unauthenticated --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }}"
 
       - name: Deploy board-service to Cloud Run
         run: |
-          gcloud run deploy board-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service --platform managed --region ${{ secrets.GCP_REGION }} --allow-unauthenticated
+          gcloud run deploy board-service --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/board-service \
+            --platform managed --region ${{ secrets.GCP_REGION }} \
+            --allow-unauthenticated --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }}"
 
       # Step 9: Generate a unique API Gateway config name
       - name: Generate unique API Gateway config name

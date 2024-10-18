@@ -1,19 +1,17 @@
-// src/mongoClient.ts
-
 import { MongoClient, ServerApiVersion } from 'mongodb';
 import { config } from 'dotenv';
 
 // Load environment variables from .env
 config();
 
-// Use the environment variable for the MongoDB URI
-const uri = 'mongodb+srv://rishiwhite11:nataliE%402447@trello-db.urkee.mongodb.net/?retryWrites=true&w=majority&appName=trello-db';
+// Local MongoDB URI
+const uri = 'mongodb://127.0.0.1:27017';
 
 if (!uri) {
   throw new Error('MongoDB connection string not found in environment variables');
 }
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// Create a MongoClient with MongoClientOptions to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -22,19 +20,43 @@ const client = new MongoClient(uri, {
   }
 });
 
+// Store a reference to the connected client
+let connectedClient: MongoClient | null = null;
+
+/**
+ * Function to connect to MongoDB and maintain a persistent connection.
+ * This function ensures that the client only connects once and reuses the connection.
+ */
 export async function connectToMongoDB() {
   try {
-    // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
-
-    // Send a ping to confirm a successful connection
-    await client.db('admin').command({ ping: 1 });
-    console.log('Pinged your deployment. You successfully connected to MongoDB!');
+    if (!connectedClient) {
+      console.log('Attempting to connect to MongoDB...');
+      // Connect the client to the server
+      connectedClient = await client.connect();
+      // Send a ping to confirm a successful connection
+      await connectedClient.db('admin').command({ ping: 1 });
+      console.log('Pinged your deployment. Successfully connected to MongoDB!');
+    }
+    return connectedClient; // Return the connected client for reuse
   } catch (err) {
-    console.error('Error connecting to MongoDB:', err);
+    console.error('Error connecting to MongoDB:', err);  // Log detailed error
     throw err;
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+  }
+}
+
+/**
+ * Function to close the MongoDB connection.
+ * This is useful to properly close connections during application shutdown.
+ */
+export async function closeMongoDBConnection() {
+  try {
+    if (connectedClient) {
+      await connectedClient.close(); // Close the MongoDB connection
+      connectedClient = null; // Reset the connected client reference
+      console.log('MongoDB connection closed');
+    }
+  } catch (err) {
+    console.error('Error closing MongoDB connection:', err);  // Log detailed error
+    throw err;
   }
 }

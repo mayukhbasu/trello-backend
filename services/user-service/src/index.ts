@@ -8,7 +8,7 @@ async function startServer() {
   const schema = await buildSchema({
     resolvers: [UserResolver]
   });
-  await connectToMongoDB();
+  //await connectToMongoDB();
   // Adding CORS configuration to the Apollo Server
   const server = new ApolloServer({
     schema,

@@ -1,9 +1,14 @@
-import { Arg, Resolver } from "type-graphql";
+import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { User, UserModel } from "../models/User";
 
 @Resolver()
 export class UserResolver {
 
+  @Query(() => [User])
+  async getUsers(): Promise<User[]> {
+    return await UserModel.find(); // Fetch all users from the database
+  }
+  @Mutation(() => User)
   async saveUser(
     @Arg('name') name: string,
     @Arg('email') email: string,

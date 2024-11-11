@@ -1,0 +1,40 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.client.HttpClientErrorException;
+
+public class YourServiceClass {
+    private static final Logger logger = LoggerFactory.getLogger(YourServiceClass.class);
+
+    public BoardUserRole assignRoleToUser(Long boardId, Long userId, Long roleId) {
+        String roleUrl = "http://localhost:8080/api/roles/" + roleId;
+        
+        try {
+            logger.info("Attempting to fetch role from URL: {}", roleUrl);
+            Object role = restTemplate.getForObject(roleUrl, Object.class);
+            
+            if (role == null) {
+                logger.error("Failed to retrieve role for roleId: {}", roleId);
+                throw new IllegalArgumentException("Invalid role ID");
+            }
+            
+            logger.info("Role fetched successfully for roleId: {}", roleId);
+            
+            BoardUserRole boardUserRole = new BoardUserRole();
+            boardUserRole.setId(boardId);
+            boardUserRole.setUserId(userId);
+            boardUserRole.setRoleId(roleId);
+            
+            logger.info("Saving BoardUserRole with boardId: {}, userId: {}, roleId: {}", boardId, userId, roleId);
+            BoardUserRole savedRole = boardUserRoleRepository.save(boardUserRole);
+            logger.info("BoardUserRole saved successfully with ID: {}", savedRole.getId());
+            
+            return savedRole;
+        } catch (HttpClientErrorException e) {
+            logger.error("HTTP error while fetching role from URL: {}", roleUrl, e);
+            throw new IllegalArgumentException("Invalid role ID", e);
+        } catch (Exception e) {
+            logger.error("An error occurred in assignRoleToUser method", e);
+            throw new RuntimeException("An error occurred while assigning role to user", e);
+        }
+    }
+}

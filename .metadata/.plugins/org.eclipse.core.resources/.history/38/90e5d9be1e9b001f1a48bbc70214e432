@@ -1,0 +1,5 @@
+package com.trello.user.config;
+
+public class SecurityConfig {
+
+}

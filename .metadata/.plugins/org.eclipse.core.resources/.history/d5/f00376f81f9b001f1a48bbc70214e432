@@ -1,0 +1,16 @@
+spring.application.name=trello-board-service
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/trello_board_db
+spring.datasource.username=black_wind
+spring.datasource.password=tiger
+
+# JPA Configuration
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# Server Port
+server.port=8081
+
+logging.level.org.springframework.security=DEBUG
+

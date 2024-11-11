@@ -1,0 +1,49 @@
+package com.trello.board.controller;
+
+import com.trello.board.models.BoardUserRole;
+import com.trello.board.service.BoardRoleService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/board-roles")
+public class BoardRoleController {
+
+    private final BoardRoleService boardRoleService;
+
+    public BoardRoleController(BoardRoleService boardRoleService) {
+        this.boardRoleService = boardRoleService;
+    }
+
+    @PostMapping("/assign")
+    public ResponseEntity<?> assignRoleToUser(@RequestParam Long boardId, @RequestParam Long userId, @RequestParam Long roleId) {
+        logger.info("Received request to assign role with ID {} to user with ID {} on board with ID {}", roleId, userId, boardId);
+
+        try {
+            BoardUserRole boardUserRole = boardRoleService.assignRoleToUser(boardId, userId, roleId);
+            logger.info("Successfully assigned role with ID {} to user with ID {} on board with ID {}", roleId, userId, boardId);
+            return ResponseEntity.ok(boardUserRole);
+        } catch (Exception e) {
+            logger.error("Error assigning role: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/board/{boardId}")
+    public ResponseEntity<List<BoardUserRole>> getRolesForBoard(@PathVariable Long boardId) {
+        List<BoardUserRole> roles = boardRoleService.getRolesForBoard(boardId);
+        return ResponseEntity.ok(roles);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<BoardUserRole>> getRolesForUser(@PathVariable Long userId) {
+        List<BoardUserRole> roles = boardRoleService.getRolesForUser(userId);
+        return ResponseEntity.ok(roles);
+    }
+}

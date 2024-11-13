@@ -1,0 +1,16 @@
+// tsconfig.base.json
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared-lib/*": ["packages/shared-lib/src/*"],
+      "@shared-lib": ["packages/shared-lib/src/index.ts"]
+    }
+  }
+}

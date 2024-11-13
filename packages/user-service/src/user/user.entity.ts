@@ -16,6 +16,6 @@ export class User {
   @Column()
   password: string;
 
-  @Column('simple-array', { default: 'USER' })
+  @Column('simple-array')
   roles: string[];
 }

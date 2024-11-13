@@ -6,28 +6,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
+exports.BoardModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const board_module_1 = require("./board/board.module");
-let AppModule = class AppModule {
+const board_entity_1 = require("./entities/board.entity");
+const board_service_1 = require("./services/board.service");
+const board_controller_1 = require("./controller/board.controller");
+let BoardModule = class BoardModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.BoardModule = BoardModule;
+exports.BoardModule = BoardModule = __decorate([
     (0, common_1.Module)({
-        imports: [
-            typeorm_1.TypeOrmModule.forRoot({
-                type: 'mysql',
-                host: process.env.DB_HOST,
-                port: +process.env.DB_PORT,
-                username: process.env.DB_USERNAME,
-                password: process.env.DB_PASSWORD,
-                database: process.env.DB_NAME,
-                autoLoadEntities: true,
-                synchronize: true,
-            }),
-            board_module_1.BoardModule,
-        ],
+        imports: [typeorm_1.TypeOrmModule.forFeature([board_entity_1.Board])],
+        controllers: [board_controller_1.BoardController],
+        providers: [board_service_1.BoardService],
+        exports: [board_service_1.BoardService],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], BoardModule);
+//# sourceMappingURL=board.module.js.map

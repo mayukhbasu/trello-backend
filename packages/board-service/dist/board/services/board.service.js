@@ -23,8 +23,15 @@ let BoardService = class BoardService {
     }
     async createBoard(createBoardDto, user) {
         const { name, description, visibility = 'private' } = createBoardDto;
+        if (!user || !user.id) {
+            throw new common_1.NotFoundException('User not found');
+        }
         const existingBoard = await this.boardRepository.findOne({
-            where: { name, owner: user },
+            where: {
+                name,
+                owner: { id: user.id },
+            },
+            relations: ['owner'],
         });
         if (existingBoard) {
             throw new common_1.ConflictException('A board with this name already exists.');
@@ -35,7 +42,10 @@ let BoardService = class BoardService {
             visibility,
             owner: user,
         });
-        return this.boardRepository.save(board);
+        if (!board.name || !board.owner || !board.visibility) {
+            throw new Error('Invalid board data. Please check the input values.');
+        }
+        return await this.boardRepository.save(board);
     }
 };
 exports.BoardService = BoardService;

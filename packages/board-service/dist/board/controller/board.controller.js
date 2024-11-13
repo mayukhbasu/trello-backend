@@ -25,6 +25,9 @@ let BoardController = class BoardController {
         const user = req.user;
         return this.boardService.createBoard(createBoardDto, user);
     }
+    async testData() {
+        return "Hello world";
+    }
 };
 exports.BoardController = BoardController;
 __decorate([
@@ -36,6 +39,12 @@ __decorate([
     __metadata("design:paramtypes", [create_board_dto_1.CreateBoardDto, Object]),
     __metadata("design:returntype", Promise)
 ], BoardController.prototype, "createBoard", null);
+__decorate([
+    (0, common_1.Get)("/"),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], BoardController.prototype, "testData", null);
 exports.BoardController = BoardController = __decorate([
     (0, common_1.Controller)('boards'),
     __metadata("design:paramtypes", [board_service_1.BoardService])

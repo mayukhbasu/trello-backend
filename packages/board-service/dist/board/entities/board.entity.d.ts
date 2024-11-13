@@ -3,7 +3,6 @@ export declare class Board {
     id: string;
     name: string;
     description: string;
-    visibility: 'private' | 'public';
-    createdAt: Date;
+    visibility: string;
     owner: User;
 }

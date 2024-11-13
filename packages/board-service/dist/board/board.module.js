@@ -9,15 +9,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BoardModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const config_1 = require("@nestjs/config");
+const shared_lib_1 = require("shared-lib");
+const board_controller_1 = require("./controller/board.controller");
 const board_entity_1 = require("./entities/board.entity");
 const board_service_1 = require("./services/board.service");
-const board_controller_1 = require("./controller/board.controller");
 let BoardModule = class BoardModule {
 };
 exports.BoardModule = BoardModule;
 exports.BoardModule = BoardModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([board_entity_1.Board])],
+        imports: [
+            config_1.ConfigModule,
+            typeorm_1.TypeOrmModule.forFeature([board_entity_1.Board, shared_lib_1.User]),
+        ],
         controllers: [board_controller_1.BoardController],
         providers: [board_service_1.BoardService],
         exports: [board_service_1.BoardService],

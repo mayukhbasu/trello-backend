@@ -9,6 +9,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const config_1 = require("@nestjs/config");
+const board_entity_1 = require("./board/entities/board.entity");
+const shared_lib_1 = require("shared-lib");
 const board_module_1 = require("./board/board.module");
 let AppModule = class AppModule {
 };
@@ -16,17 +19,19 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            config_1.ConfigModule.forRoot(),
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'mysql',
                 host: process.env.DB_HOST,
-                port: +process.env.DB_PORT,
+                port: parseInt(process.env.DB_PORT, 10),
                 username: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 database: process.env.DB_NAME,
-                autoLoadEntities: true,
+                entities: [board_entity_1.Board, shared_lib_1.User],
                 synchronize: true,
+                autoLoadEntities: true,
             }),
-            board_module_1.BoardModule,
+            board_module_1.BoardModule
         ],
     })
 ], AppModule);

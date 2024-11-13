@@ -1,25 +1,23 @@
-// src/entities/board.entity.ts
+// board.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
-import { User } from 'shared-lib'; // Import User from the shared library
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from 'shared-lib';
 
 @Entity()
 export class Board {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   description: string;
 
-  @Column({ type: 'varchar', default: 'private' })
-  visibility: 'private' | 'public';
+  @Column({ default: 'private' })
+  visibility: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { eager: true })
+  @JoinColumn({ name: 'owner_id', referencedColumnName: 'id' }) // Specify the referenced column explicitly
   owner: User;
 }

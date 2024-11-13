@@ -1,6 +1,6 @@
 // src/controllers/board.controller.ts
 
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get } from '@nestjs/common';
 import { BoardService } from '../services/board.service';
 import { CreateBoardDto } from '../dto/create-board.dto';
 import { Board } from '../entities/board.entity';
@@ -19,5 +19,9 @@ export class BoardController {
   ): Promise<Board> {
     const user = req.user;
     return this.boardService.createBoard(createBoardDto, user);
+  }
+  @Get("/")
+  async testData() {
+    return "Hello world";
   }
 }

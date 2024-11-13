@@ -39,7 +39,6 @@ const config_1 = require("@nestjs/config");
 let JwtAuthGuard = class JwtAuthGuard {
     constructor(configService) {
         this.configService = configService;
-        console.log('JwtAuthGuard initialized');
     }
     canActivate(context) {
         var _a;
@@ -48,16 +47,18 @@ let JwtAuthGuard = class JwtAuthGuard {
         if (!token) {
             throw new common_1.UnauthorizedException('Token not provided.');
         }
-        // Retrieve the secret from environment variables
         const secret = this.configService.get('JWT_SECRET');
-        // Check if the secret is defined, otherwise throw an error
         if (!secret) {
             throw new Error('JWT_SECRET is not defined in the environment variables.');
         }
         try {
-            // Verify the token with the secret
             const decoded = jwt.verify(token, secret);
-            request.user = decoded;
+            // Attach `id` instead of `userId`
+            request.user = {
+                id: decoded.userId, // Use `id` here instead of `userId`
+                username: decoded.username,
+                roles: decoded.roles,
+            };
             return true;
         }
         catch (error) {

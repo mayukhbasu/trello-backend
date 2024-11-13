@@ -4,10 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  
-  constructor(private readonly configService: ConfigService) {
-    console.log('JwtAuthGuard initialized');
-  }
+  constructor(private readonly configService: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
@@ -17,18 +14,20 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token not provided.');
     }
 
-    // Retrieve the secret from environment variables
     const secret = this.configService.get<string>('JWT_SECRET');
 
-    // Check if the secret is defined, otherwise throw an error
     if (!secret) {
       throw new Error('JWT_SECRET is not defined in the environment variables.');
     }
 
     try {
-      // Verify the token with the secret
-      const decoded = jwt.verify(token, secret);
-      request.user = decoded;
+      const decoded = jwt.verify(token, secret) as any;
+      // Attach `id` instead of `userId`
+      request.user = {
+        id: decoded.userId, // Use `id` here instead of `userId`
+        username: decoded.username,
+        roles: decoded.roles,
+      };
       return true;
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token.');

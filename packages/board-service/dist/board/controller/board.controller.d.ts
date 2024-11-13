@@ -5,4 +5,5 @@ export declare class BoardController {
     private readonly boardService;
     constructor(boardService: BoardService);
     createBoard(createBoardDto: CreateBoardDto, req: any): Promise<Board>;
+    testData(): Promise<string>;
 }

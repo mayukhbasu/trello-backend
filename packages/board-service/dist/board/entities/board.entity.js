@@ -20,23 +20,20 @@ __decorate([
     __metadata("design:type", String)
 ], Board.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', unique: true }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Board.prototype, "name", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Board.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'private' }),
+    (0, typeorm_1.Column)({ default: 'private' }),
     __metadata("design:type", String)
 ], Board.prototype, "visibility", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
-    __metadata("design:type", Date)
-], Board.prototype, "createdAt", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => shared_lib_1.User),
+    (0, typeorm_1.ManyToOne)(() => shared_lib_1.User, { eager: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'owner_id', referencedColumnName: 'id' }),
     __metadata("design:type", shared_lib_1.User)
 ], Board.prototype, "owner", void 0);
 exports.Board = Board = __decorate([

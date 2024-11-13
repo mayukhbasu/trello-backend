@@ -2,8 +2,7 @@
 
 import { Body, Controller, Get, Param, Post, UseGuards, Headers } from '@nestjs/common';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { User } from 'shared-lib';
+import { User, JwtAuthGuard } from 'shared-lib';
 
 
 @Controller('users')

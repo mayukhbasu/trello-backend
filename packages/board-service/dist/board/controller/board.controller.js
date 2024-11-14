@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const board_service_1 = require("../services/board.service");
 const create_board_dto_1 = require("../dto/create-board.dto");
 const shared_lib_1 = require("shared-lib");
+const update_board_dto_1 = require("../dto/update-board.dto");
 let BoardController = class BoardController {
     constructor(boardService) {
         this.boardService = boardService;
@@ -25,8 +26,13 @@ let BoardController = class BoardController {
         const user = req.user;
         return this.boardService.createBoard(createBoardDto, user);
     }
-    async testData() {
-        return "Hello world";
+    async getAllBoards(req, page = 1, limit = 10, visibility) {
+        const user = req.user;
+        return this.boardService.getAllBoards(user.id, page, limit, visibility);
+    }
+    async updateBoard(boardId, updateBoardDto, req) {
+        const userId = req.user.userId;
+        return this.boardService.updateBoard(boardId, updateBoardDto, userId);
     }
 };
 exports.BoardController = BoardController;
@@ -40,11 +46,26 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BoardController.prototype, "createBoard", null);
 __decorate([
-    (0, common_1.Get)("/"),
+    (0, common_1.Get)(),
+    (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('visibility')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object, Number, Number, String]),
     __metadata("design:returntype", Promise)
-], BoardController.prototype, "testData", null);
+], BoardController.prototype, "getAllBoards", null);
+__decorate([
+    (0, common_1.Put)(':boardId'),
+    (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('boardId')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_board_dto_1.UpdateBoardDto, Object]),
+    __metadata("design:returntype", Promise)
+], BoardController.prototype, "updateBoard", null);
 exports.BoardController = BoardController = __decorate([
     (0, common_1.Controller)('boards'),
     __metadata("design:paramtypes", [board_service_1.BoardService])

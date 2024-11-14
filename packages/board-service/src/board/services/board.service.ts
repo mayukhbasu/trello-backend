@@ -97,4 +97,26 @@ export class BoardService {
 
     return this.boardRepository.save(board);
   }
+
+  async deleteBoard(boardId: string, user: User): Promise<string> {
+    // Find the board by ID
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId, owner: { id: user.id } },
+    });
+
+    // Check if the board exists
+    if (!board) {
+      throw new NotFoundException('Board not found.');
+    }
+
+    // Ensure the user is the owner of the board
+    if (board.owner.id !== user.id) {
+      throw new ForbiddenException('You are not authorized to delete this board.');
+    }
+
+    // Soft delete the board
+    await this.boardRepository.softRemove(board);
+
+    return `Board with ID ${boardId} has been successfully deleted.`;
+  }
 }

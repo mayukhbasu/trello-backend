@@ -47,6 +47,38 @@ let BoardService = class BoardService {
         }
         return await this.boardRepository.save(board);
     }
+    async getAllBoards(userId, page, limit, visibility) {
+        const query = this.boardRepository.createQueryBuilder('board')
+            .where('board.owner_id = :userId', { userId })
+            .skip((page - 1) * limit).take(limit);
+        if (visibility) {
+            query.andWhere('board.visibility = :visibility', { visibility });
+        }
+        const [boards, totalCount] = await query.getManyAndCount();
+        return { boards, totalCount };
+    }
+    async updateBoard(boardId, updateBoardDto, userId) {
+        const board = await this.boardRepository.findOne({
+            where: { id: boardId },
+            relations: ['owner'],
+        });
+        if (!board) {
+            throw new common_1.NotFoundException('Board not found.');
+        }
+        if (board.owner.id !== userId) {
+            throw new common_1.ForbiddenException('You do not have permission to update this board.');
+        }
+        if (updateBoardDto.name && updateBoardDto.name !== board.name) {
+            const existingBoard = await this.boardRepository.findOne({
+                where: { name: updateBoardDto.name, owner: { id: userId } },
+            });
+            if (existingBoard) {
+                throw new common_1.ConflictException('A board with this name already exists.');
+            }
+        }
+        Object.assign(board, updateBoardDto);
+        return this.boardRepository.save(board);
+    }
 };
 exports.BoardService = BoardService;
 exports.BoardService = BoardService = __decorate([

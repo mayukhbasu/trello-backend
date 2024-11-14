@@ -1,6 +1,6 @@
 // board.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, DeleteDateColumn } from 'typeorm';
 import { User } from 'shared-lib';
 
 @Entity()
@@ -20,4 +20,7 @@ export class Board {
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'owner_id', referencedColumnName: 'id' }) // Specify the referenced column explicitly
   owner: User;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

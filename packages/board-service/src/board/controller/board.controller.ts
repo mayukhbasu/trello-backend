@@ -1,6 +1,6 @@
 // src/controllers/board.controller.ts
 
-import { Controller, Post, Body, UseGuards, Request, Get, Query, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, Query, Param, Put, Delete } from '@nestjs/common';
 import { BoardService } from '../services/board.service';
 import { CreateBoardDto } from '../dto/create-board.dto';
 import { Board } from '../entities/board.entity';
@@ -42,5 +42,15 @@ export class BoardController {
   ): Promise<Board> {
     const userId = req.user.userId;
     return this.boardService.updateBoard(boardId, updateBoardDto, userId);
+  }
+
+  @Delete(':boardId')
+  @UseGuards(JwtAuthGuard)
+  async deleteBoard(
+    @Param('boardId') boardId: string,
+    @Request() req
+  ): Promise<string> {
+    const user = req.user;
+    return this.boardService.deleteBoard(boardId, user);
   }
 }

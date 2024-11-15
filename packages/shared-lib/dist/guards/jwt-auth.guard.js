@@ -53,9 +53,8 @@ let JwtAuthGuard = class JwtAuthGuard {
         }
         try {
             const decoded = jwt.verify(token, secret);
-            // Attach `id` instead of `userId`
             request.user = {
-                id: decoded.userId, // Use `id` here instead of `userId`
+                id: decoded.userId,
                 username: decoded.username,
                 roles: decoded.roles,
             };

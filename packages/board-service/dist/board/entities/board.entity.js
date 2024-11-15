@@ -21,6 +21,7 @@ __decorate([
 ], Board.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Board.prototype, "name", void 0);
 __decorate([
@@ -36,7 +37,22 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'owner_id', referencedColumnName: 'id' }),
     __metadata("design:type", shared_lib_1.User)
 ], Board.prototype, "owner", void 0);
+__decorate([
+    (0, typeorm_1.DeleteDateColumn)(),
+    __metadata("design:type", Date)
+], Board.prototype, "deletedAt", void 0);
+__decorate([
+    (0, typeorm_1.ManyToMany)(() => shared_lib_1.User, { eager: true }),
+    (0, typeorm_1.JoinTable)({
+        name: 'board_collaborators',
+        joinColumn: { name: 'board_id', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'collaborator_id', referencedColumnName: 'id' },
+    }),
+    __metadata("design:type", Array)
+], Board.prototype, "collaborators", void 0);
 exports.Board = Board = __decorate([
-    (0, typeorm_1.Entity)()
+    (0, typeorm_1.Entity)(),
+    (0, typeorm_1.Index)('idx_board_owner', ['owner']),
+    (0, typeorm_1.Index)('idx_board_name', ['name'])
 ], Board);
 //# sourceMappingURL=board.entity.js.map

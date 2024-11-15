@@ -1,6 +1,6 @@
 // board.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, DeleteDateColumn, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, DeleteDateColumn, Index, ManyToMany, JoinTable } from 'typeorm';
 import { User } from 'shared-lib';
 
 @Entity()
@@ -26,4 +26,12 @@ export class Board {
 
   @DeleteDateColumn()
   deletedAt?: Date;
+
+  @ManyToMany(() => User, {eager: true})
+  @JoinTable({
+    name: 'board_collaborators',
+    joinColumn: { name: 'board_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'collaborator_id', referencedColumnName: 'id' },
+  })
+  collaborators: User[]
 }

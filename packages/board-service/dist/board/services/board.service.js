@@ -17,9 +17,13 @@ const typeorm_1 = require("@nestjs/typeorm");
 const board_entity_1 = require("../entities/board.entity");
 const typeorm_2 = require("typeorm");
 const common_1 = require("@nestjs/common");
+const shared_lib_1 = require("shared-lib");
+const cache_manager_1 = require("@nestjs/cache-manager");
 let BoardService = class BoardService {
-    constructor(boardRepository) {
+    constructor(boardRepository, userRepository, cacheManager) {
         this.boardRepository = boardRepository;
+        this.userRepository = userRepository;
+        this.cacheManager = cacheManager;
     }
     async createBoard(createBoardDto, user) {
         const { name, description, visibility = 'private' } = createBoardDto;
@@ -48,6 +52,11 @@ let BoardService = class BoardService {
         return await this.boardRepository.save(board);
     }
     async getAllBoards(userId, page, limit, visibility) {
+        const cacheKey = `boards:${userId}:page:${page}:limit:${limit}:visibility:${visibility || 'all'}`;
+        const cachedData = await this.cacheManager.get(cacheKey);
+        if (cachedData) {
+            return cachedData;
+        }
         const query = this.boardRepository.createQueryBuilder('board')
             .where('board.owner_id = :userId', { userId })
             .skip((page - 1) * limit).take(limit);
@@ -55,6 +64,8 @@ let BoardService = class BoardService {
             query.andWhere('board.visibility = :visibility', { visibility });
         }
         const [boards, totalCount] = await query.getManyAndCount();
+        const result = { boards, totalCount };
+        await this.cacheManager.set(cacheKey, result, 300);
         return { boards, totalCount };
     }
     async updateBoard(boardId, updateBoardDto, userId) {
@@ -79,10 +90,72 @@ let BoardService = class BoardService {
         Object.assign(board, updateBoardDto);
         return this.boardRepository.save(board);
     }
+    async deleteBoard(boardId, user) {
+        const board = await this.boardRepository.findOne({
+            where: { id: boardId, owner: { id: user.id } },
+        });
+        if (!board) {
+            throw new common_1.NotFoundException('Board not found.');
+        }
+        if (board.owner.id !== user.id) {
+            throw new common_1.ForbiddenException('You are not authorized to delete this board.');
+        }
+        await this.boardRepository.softRemove(board);
+        return `Board with ID ${boardId} has been successfully deleted.`;
+    }
+    async addCollaborator(boardId, userId, collaboratorId, role) {
+        const board = await this.boardRepository.findOne({
+            where: { id: boardId },
+            relations: ['owner', 'collaborators'],
+        });
+        if (!board) {
+            throw new common_1.NotFoundException('Board not found.');
+        }
+        if (board.owner.id !== userId) {
+            throw new common_1.ForbiddenException('You do not have permission to add collaborators.');
+        }
+        const collaborator = await this.userRepository.findOne({ where: { id: collaboratorId } });
+        if (!collaborator) {
+            throw new common_1.NotFoundException('Collaborator user not found.');
+        }
+        const isAlreadyCollaborator = board.collaborators.some((user) => user.id === collaborator.id);
+        if (isAlreadyCollaborator) {
+            throw new common_1.ConflictException('User is already a collaborator.');
+        }
+        board.collaborators.push(collaborator);
+        return await this.boardRepository.save(board);
+    }
+    async deleteCollaborator(boardId, userId, collaboratorId, role) {
+        const board = await this.boardRepository.findOne({
+            where: { id: boardId },
+            relations: ['owner', 'collaborators'],
+        });
+        if (!board) {
+            throw new common_1.NotFoundException('Board not found.');
+        }
+        if (board.owner.id !== userId) {
+            throw new common_1.ForbiddenException('You do not have permission to delete collaborators.');
+        }
+        const collaborator = await this.userRepository.findOne({
+            where: { id: collaboratorId },
+        });
+        if (!collaborator) {
+            throw new common_1.NotFoundException('Collaborator user not found.');
+        }
+        const collaboratorIndex = board.collaborators.findIndex((user) => user.id === collaboratorId);
+        if (collaboratorIndex === -1) {
+            throw new common_1.NotFoundException('User is not a collaborator on this board.');
+        }
+        board.collaborators.splice(collaboratorIndex, 1);
+        return await this.boardRepository.save(board);
+    }
 };
 exports.BoardService = BoardService;
 exports.BoardService = BoardService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(board_entity_1.Board)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(shared_lib_1.User)),
+    __param(2, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository, Object])
 ], BoardService);
 //# sourceMappingURL=board.service.js.map

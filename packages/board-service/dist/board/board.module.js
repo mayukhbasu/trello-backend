@@ -10,6 +10,8 @@ exports.BoardModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
+const cache_manager_1 = require("@nestjs/cache-manager");
+const redisStore = require("cache-manager-ioredis");
 const shared_lib_1 = require("shared-lib");
 const board_controller_1 = require("./controller/board.controller");
 const board_entity_1 = require("./entities/board.entity");
@@ -22,6 +24,12 @@ exports.BoardModule = BoardModule = __decorate([
         imports: [
             config_1.ConfigModule,
             typeorm_1.TypeOrmModule.forFeature([board_entity_1.Board, shared_lib_1.User]),
+            cache_manager_1.CacheModule.register({
+                store: redisStore,
+                host: 'localhost',
+                port: 6379,
+                ttl: 300,
+            }),
         ],
         controllers: [board_controller_1.BoardController],
         providers: [board_service_1.BoardService],

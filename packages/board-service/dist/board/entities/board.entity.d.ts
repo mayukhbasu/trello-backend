@@ -5,4 +5,6 @@ export declare class Board {
     description: string;
     visibility: string;
     owner: User;
+    deletedAt?: Date;
+    collaborators: User[];
 }

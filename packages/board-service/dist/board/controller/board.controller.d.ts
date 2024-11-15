@@ -11,4 +11,7 @@ export declare class BoardController {
         totalCount: number;
     }>;
     updateBoard(boardId: string, updateBoardDto: UpdateBoardDto, req: any): Promise<Board>;
+    deleteBoard(boardId: string, req: any): Promise<string>;
+    addCollaborator(boardId: string, collaboratorId: string, role: string, req: any): Promise<Board>;
+    deleteCollaborator(boardId: string, collaboratorId: string, role: string, req: any): Promise<Board>;
 }

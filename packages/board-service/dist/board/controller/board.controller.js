@@ -34,6 +34,18 @@ let BoardController = class BoardController {
         const userId = req.user.userId;
         return this.boardService.updateBoard(boardId, updateBoardDto, userId);
     }
+    async deleteBoard(boardId, req) {
+        const user = req.user;
+        return this.boardService.deleteBoard(boardId, user);
+    }
+    async addCollaborator(boardId, collaboratorId, role, req) {
+        const userId = req.user.id;
+        return this.boardService.addCollaborator(boardId, userId, collaboratorId, role);
+    }
+    async deleteCollaborator(boardId, collaboratorId, role, req) {
+        const userId = req.user.id;
+        return this.boardService.deleteCollaborator(boardId, userId, collaboratorId, role);
+    }
 };
 exports.BoardController = BoardController;
 __decorate([
@@ -66,6 +78,37 @@ __decorate([
     __metadata("design:paramtypes", [String, update_board_dto_1.UpdateBoardDto, Object]),
     __metadata("design:returntype", Promise)
 ], BoardController.prototype, "updateBoard", null);
+__decorate([
+    (0, common_1.Delete)(':boardId'),
+    (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('boardId')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], BoardController.prototype, "deleteBoard", null);
+__decorate([
+    (0, common_1.Post)('/:boardId/collaborators'),
+    (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('boardId')),
+    __param(1, (0, common_1.Body)('collaboratorId')),
+    __param(2, (0, common_1.Body)('role')),
+    __param(3, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], BoardController.prototype, "addCollaborator", null);
+__decorate([
+    (0, common_1.Delete)('/:boardId/collaborators'),
+    (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('boardId')),
+    __param(1, (0, common_1.Body)('collaboratorId')),
+    __param(2, (0, common_1.Body)('role')),
+    __param(3, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], BoardController.prototype, "deleteCollaborator", null);
 exports.BoardController = BoardController = __decorate([
     (0, common_1.Controller)('boards'),
     __metadata("design:paramtypes", [board_service_1.BoardService])

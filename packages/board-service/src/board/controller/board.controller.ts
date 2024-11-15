@@ -1,11 +1,12 @@
 // src/controllers/board.controller.ts
 
-import { Controller, Post, Body, UseGuards, Request, Get, Query, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get, Query, Param, Put, Delete, Patch, Req } from '@nestjs/common';
 import { BoardService } from '../services/board.service';
 import { CreateBoardDto } from '../dto/create-board.dto';
 import { Board } from '../entities/board.entity';
 import { JwtAuthGuard } from 'shared-lib';
 import { UpdateBoardDto } from '../dto/update-board.dto';
+import { UpdateVisibilityDto } from '../dto/update-visibility.dto';
 
 
 @Controller('boards')
@@ -52,5 +53,39 @@ export class BoardController {
   ): Promise<string> {
     const user = req.user;
     return this.boardService.deleteBoard(boardId, user);
+  }
+  @Post('/:boardId/collaborators')
+  @UseGuards(JwtAuthGuard)
+  async addCollaborator(
+    @Param('boardId') boardId: string,
+    @Body('collaboratorId') collaboratorId: string,
+    @Body('role') role: string,
+    @Request() req,
+  ) {
+    const userId = req.user.id;
+    return this.boardService.addCollaborator(boardId, userId, collaboratorId, role);
+  }
+
+  @Delete('/:boardId/collaborators')
+  @UseGuards(JwtAuthGuard)
+  async deleteCollaborator(
+    @Param('boardId') boardId: string,
+    @Body('collaboratorId') collaboratorId: string,
+    @Body('role') role: string,
+    @Request() req,
+  ) {
+    const userId = req.user.id;
+    return this.boardService.deleteCollaborator(boardId, userId, collaboratorId, role);
+  }
+
+  @Patch(':boardId/visibility')
+  @UseGuards(JwtAuthGuard)
+  async changeVisibility(
+    @Param('boardId') boardId: string,
+    @Body() updateVisibilityDto: UpdateVisibilityDto,
+    @Req() req: any
+  ) {
+    const userId = req.user.id;
+    return await this.boardService.changeVisibility(boardId, userId, updateVisibilityDto.visibility);
   }
 }

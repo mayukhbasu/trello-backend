@@ -13,6 +13,8 @@ export class BoardService {
   constructor(
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache
   ) {}
@@ -130,4 +132,118 @@ export class BoardService {
 
     return `Board with ID ${boardId} has been successfully deleted.`;
   }
+
+  async addCollaborator(boardId: string, userId: string, collaboratorId: string, role: string): Promise<Board> {
+    // Find the board by ID
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId },
+      relations: ['owner', 'collaborators'],
+    });
+
+    if (!board) {
+      throw new NotFoundException('Board not found.');
+    }
+
+    // Ensure the user making the request is the board owner
+    if (board.owner.id !== userId) {
+      throw new ForbiddenException('You do not have permission to add collaborators.');
+    }
+
+    // Find the collaborator user by ID
+    const collaborator = await this.userRepository.findOne({ where: { id: collaboratorId } });
+
+    if (!collaborator) {
+      throw new NotFoundException('Collaborator user not found.');
+    }
+
+    // Check if the collaborator is already added
+    const isAlreadyCollaborator = board.collaborators.some((user) => user.id === collaborator.id);
+    if (isAlreadyCollaborator) {
+      throw new ConflictException('User is already a collaborator.');
+    }
+
+    // Add the collaborator to the board
+    board.collaborators.push(collaborator);
+
+    // Save the updated board
+    return await this.boardRepository.save(board);
+  }
+
+  async deleteCollaborator(
+    boardId: string,
+    userId: string,
+    collaboratorId: string,
+    role: string
+  ): Promise<Board> {
+    // Fetch the board with owner and collaborators
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId },
+      relations: ['owner', 'collaborators'],
+    });
+  
+    // Check if the board exists
+    if (!board) {
+      throw new NotFoundException('Board not found.');
+    }
+  
+    // Check if the requesting user is the owner of the board
+    if (board.owner.id !== userId) {
+      throw new ForbiddenException('You do not have permission to delete collaborators.');
+    }
+  
+    // Check if the collaborator exists
+    const collaborator = await this.userRepository.findOne({
+      where: { id: collaboratorId },
+    });
+  
+    if (!collaborator) {
+      throw new NotFoundException('Collaborator user not found.');
+    }
+  
+    // Check if the user is a collaborator on the board
+    const collaboratorIndex = board.collaborators.findIndex(
+      (user) => user.id === collaboratorId
+    );
+  
+    if (collaboratorIndex === -1) {
+      throw new NotFoundException('User is not a collaborator on this board.');
+    }
+  
+    // Remove the collaborator from the list
+    board.collaborators.splice(collaboratorIndex, 1);
+  
+    // Save the updated board and return it
+    return await this.boardRepository.save(board);
+  }
+  async changeVisibility(
+    boardId: string,
+    userId: string,
+    visibility: 'public' | 'private'
+  ): Promise<Board> {
+    // Find the board with its owner relation
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId },
+      relations: ['owner'],
+    });
+
+    // Check if the board exists
+    if (!board) {
+      throw new NotFoundException('Board not found.');
+    }
+
+    // Ensure the user is the owner of the board
+    if (board.owner.id !== userId) {
+      throw new ForbiddenException('You do not have permission to change the visibility of this board.');
+    }
+
+    // Update the visibility
+    board.visibility = visibility;
+
+    // Save the updated board and return it
+    return await this.boardRepository.save(board);
+  }
+
+  
+
+  
 }

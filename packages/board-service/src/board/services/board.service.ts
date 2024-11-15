@@ -1,15 +1,20 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board } from '../entities/board.entity';
 import { Repository } from 'typeorm';
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CreateBoardDto } from '../dto/create-board.dto';
 import { User } from 'shared-lib';
 import { UpdateBoardDto } from '../dto/update-board.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+
 
 export class BoardService {
   constructor(
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache
   ) {}
 
   async createBoard(createBoardDto: CreateBoardDto, user: User): Promise<Board> {
@@ -56,6 +61,11 @@ export class BoardService {
     limit: number,
     visibility?: string
   ): Promise<{boards: Board[], totalCount: number}> {
+    const cacheKey = `boards:${userId}:page:${page}:limit:${limit}:visibility:${visibility || 'all'}`;
+    const cachedData = await this.cacheManager.get<{ boards: Board[]; totalCount: number }>(cacheKey);
+    if(cachedData) {
+      return cachedData;
+    }
     const query = this.boardRepository.createQueryBuilder('board')
                   .where('board.owner_id = :userId', {userId})
                   .skip((page - 1) * limit).take(limit);
@@ -63,7 +73,8 @@ export class BoardService {
       query.andWhere('board.visibility = :visibility', { visibility });
     }
     const [boards, totalCount] = await query.getManyAndCount();
-
+    const result = { boards, totalCount };
+    await this.cacheManager.set(cacheKey, result, 300);
     return { boards, totalCount };
   }
 

@@ -71,11 +71,10 @@ export class BoardController {
   async deleteCollaborator(
     @Param('boardId') boardId: string,
     @Body('collaboratorId') collaboratorId: string,
-    @Body('role') role: string,
     @Request() req,
   ) {
     const userId = req.user.id;
-    return this.boardService.deleteCollaborator(boardId, userId, collaboratorId, role);
+    return this.boardService.removeCollaborator(boardId, userId, collaboratorId);
   }
 
   @Patch(':boardId/visibility')

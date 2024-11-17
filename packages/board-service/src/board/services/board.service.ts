@@ -245,4 +245,46 @@ export class BoardService {
     return updatedBoard;
   }
   
+  async changeVisibility(
+    boardId: string,
+    userId: string,
+    visibility: 'public' | 'private'
+  ): Promise<Board> {
+    const cacheKey = `board:${boardId}`;
+  
+    // Check if the board data is in the cache
+    let board = await this.cacheManager.get<Board>(cacheKey);
+  
+    // If not cached, fetch from the database
+    if (!board) {
+      board = await this.boardRepository.findOne({
+        where: { id: boardId },
+        relations: ['owner'],
+      });
+  
+      if (!board) {
+        throw new NotFoundException('Board not found.');
+      }
+  
+      // Store the board data in the cache
+      await this.cacheManager.set(cacheKey, board, 300);
+    }
+  
+    // Ensure the user is the owner of the board
+    if (board.owner.id !== userId) {
+      throw new ForbiddenException('You do not have permission to change the visibility of this board.');
+    }
+  
+    // Update the visibility
+    board.visibility = visibility;
+  
+    // Save the updated board to the database
+    const updatedBoard = await this.boardRepository.save(board);
+  
+    // Update the cache with the new visibility
+    await this.cacheManager.set(cacheKey, updatedBoard, 300);
+  
+    return updatedBoard;
+  }
+  
 }

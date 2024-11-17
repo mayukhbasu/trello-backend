@@ -14,10 +14,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BoardService = void 0;
 const typeorm_1 = require("@nestjs/typeorm");
-const board_entity_1 = require("../entities/board.entity");
+const shared_lib_1 = require("shared-lib");
 const typeorm_2 = require("typeorm");
 const common_1 = require("@nestjs/common");
-const shared_lib_1 = require("shared-lib");
+const shared_lib_2 = require("shared-lib");
 const cache_manager_1 = require("@nestjs/cache-manager");
 let BoardService = class BoardService {
     constructor(boardRepository, userRepository, cacheManager) {
@@ -69,10 +69,11 @@ let BoardService = class BoardService {
         return { boards, totalCount };
     }
     async updateBoard(boardId, updateBoardDto, userId) {
-        const board = await this.boardRepository.findOne({
-            where: { id: boardId },
-            relations: ['owner'],
-        });
+        const board = await this.boardRepository
+            .createQueryBuilder('board')
+            .leftJoinAndSelect('board.owner', 'owner')
+            .where('board.id = :boardId', { boardId })
+            .getOne();
         if (!board) {
             throw new common_1.NotFoundException('Board not found.');
         }
@@ -80,15 +81,18 @@ let BoardService = class BoardService {
             throw new common_1.ForbiddenException('You do not have permission to update this board.');
         }
         if (updateBoardDto.name && updateBoardDto.name !== board.name) {
-            const existingBoard = await this.boardRepository.findOne({
-                where: { name: updateBoardDto.name, owner: { id: userId } },
-            });
+            const existingBoard = await this.boardRepository
+                .createQueryBuilder('board')
+                .leftJoinAndSelect('board.owner', 'owner')
+                .where('board.name = :name', { name: updateBoardDto.name })
+                .andWhere('owner.id = :userId', { userId })
+                .getOne();
             if (existingBoard) {
                 throw new common_1.ConflictException('A board with this name already exists.');
             }
         }
         Object.assign(board, updateBoardDto);
-        return this.boardRepository.save(board);
+        return await this.boardRepository.save(board);
     }
     async deleteBoard(boardId, user) {
         const board = await this.boardRepository.findOne({
@@ -149,11 +153,25 @@ let BoardService = class BoardService {
         board.collaborators.splice(collaboratorIndex, 1);
         return await this.boardRepository.save(board);
     }
+    async changeVisibility(boardId, userId, visibility) {
+        const board = await this.boardRepository.findOne({
+            where: { id: boardId },
+            relations: ['owner'],
+        });
+        if (!board) {
+            throw new common_1.NotFoundException('Board not found.');
+        }
+        if (board.owner.id !== userId) {
+            throw new common_1.ForbiddenException('You do not have permission to change the visibility of this board.');
+        }
+        board.visibility = visibility;
+        return await this.boardRepository.save(board);
+    }
 };
 exports.BoardService = BoardService;
 exports.BoardService = BoardService = __decorate([
-    __param(0, (0, typeorm_1.InjectRepository)(board_entity_1.Board)),
-    __param(1, (0, typeorm_1.InjectRepository)(shared_lib_1.User)),
+    __param(0, (0, typeorm_1.InjectRepository)(shared_lib_1.Board)),
+    __param(1, (0, typeorm_1.InjectRepository)(shared_lib_2.User)),
     __param(2, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository, Object])

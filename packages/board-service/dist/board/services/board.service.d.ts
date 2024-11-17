@@ -1,4 +1,4 @@
-import { Board } from '../entities/board.entity';
+import { Board } from 'shared-lib';
 import { Repository } from 'typeorm';
 import { CreateBoardDto } from '../dto/create-board.dto';
 import { User } from 'shared-lib';
@@ -18,4 +18,5 @@ export declare class BoardService {
     deleteBoard(boardId: string, user: User): Promise<string>;
     addCollaborator(boardId: string, userId: string, collaboratorId: string, role: string): Promise<Board>;
     deleteCollaborator(boardId: string, userId: string, collaboratorId: string, role: string): Promise<Board>;
+    changeVisibility(boardId: string, userId: string, visibility: 'public' | 'private'): Promise<Board>;
 }

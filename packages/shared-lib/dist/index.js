@@ -16,6 +16,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 __exportStar(require("./entities/user.entity"), exports);
+__exportStar(require("./entities/board.entity"), exports);
+__exportStar(require("./entities/list.entity"), exports);
+__exportStar(require("./entities/card.entity"), exports);
 __exportStar(require("./guards/jwt-auth.guard"), exports);
-__exportStar(require("./shared.module"), exports);
 //# sourceMappingURL=index.js.map

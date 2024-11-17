@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { Board } from './board/entities/board.entity';
+import { Board } from 'shared-lib';
 import { User } from 'shared-lib';
 import { BoardModule } from './board/board.module';
 

@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Board } from '../entities/board.entity';
+import { Board } from 'shared-lib';
 import { Repository } from 'typeorm';
 import { ConflictException, ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CreateBoardDto } from '../dto/create-board.dto';
@@ -81,35 +81,43 @@ export class BoardService {
   }
 
   async updateBoard(boardId: string, updateBoardDto: UpdateBoardDto, userId: string): Promise<Board> {
-    const board = await this.boardRepository.findOne({
-      where: { id: boardId },
-      relations: ['owner'],
-    });
-
+    // Fetch the board with its owner using query builder
+    const board = await this.boardRepository
+      .createQueryBuilder('board')
+      .leftJoinAndSelect('board.owner', 'owner')
+      .where('board.id = :boardId', { boardId })
+      .getOne();
+  
     if (!board) {
       throw new NotFoundException('Board not found.');
     }
-
+  
+    // Ensure the user is the owner of the board
     if (board.owner.id !== userId) {
       throw new ForbiddenException('You do not have permission to update this board.');
     }
-
-    // Check for unique board name if it's being updated
+  
+    // Check for a unique board name if it's being updated
     if (updateBoardDto.name && updateBoardDto.name !== board.name) {
-      const existingBoard = await this.boardRepository.findOne({
-        where: { name: updateBoardDto.name, owner: { id: userId } },
-      });
-
+      const existingBoard = await this.boardRepository
+        .createQueryBuilder('board')
+        .leftJoinAndSelect('board.owner', 'owner')
+        .where('board.name = :name', { name: updateBoardDto.name })
+        .andWhere('owner.id = :userId', { userId })
+        .getOne();
+  
       if (existingBoard) {
         throw new ConflictException('A board with this name already exists.');
       }
     }
-
-    // Update board details
+  
+    // Update the board details
     Object.assign(board, updateBoardDto);
-
-    return this.boardRepository.save(board);
+  
+    // Save the updated board and return it
+    return await this.boardRepository.save(board);
   }
+  
 
   async deleteBoard(boardId: string, user: User): Promise<string> {
     // Find the board by ID

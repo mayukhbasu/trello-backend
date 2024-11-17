@@ -18,6 +18,7 @@ const board_service_1 = require("../services/board.service");
 const create_board_dto_1 = require("../dto/create-board.dto");
 const shared_lib_1 = require("shared-lib");
 const update_board_dto_1 = require("../dto/update-board.dto");
+const update_visibility_dto_1 = require("../dto/update-visibility.dto");
 let BoardController = class BoardController {
     constructor(boardService) {
         this.boardService = boardService;
@@ -45,6 +46,10 @@ let BoardController = class BoardController {
     async deleteCollaborator(boardId, collaboratorId, role, req) {
         const userId = req.user.id;
         return this.boardService.deleteCollaborator(boardId, userId, collaboratorId, role);
+    }
+    async changeVisibility(boardId, updateVisibilityDto, req) {
+        const userId = req.user.id;
+        return await this.boardService.changeVisibility(boardId, userId, updateVisibilityDto.visibility);
     }
 };
 exports.BoardController = BoardController;
@@ -109,6 +114,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], BoardController.prototype, "deleteCollaborator", null);
+__decorate([
+    (0, common_1.Patch)(':boardId/visibility'),
+    (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('boardId')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_visibility_dto_1.UpdateVisibilityDto, Object]),
+    __metadata("design:returntype", Promise)
+], BoardController.prototype, "changeVisibility", null);
 exports.BoardController = BoardController = __decorate([
     (0, common_1.Controller)('boards'),
     __metadata("design:paramtypes", [board_service_1.BoardService])

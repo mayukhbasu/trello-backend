@@ -6,7 +6,7 @@ import * as redisStore from 'cache-manager-ioredis';
 
 import { User } from 'shared-lib';
 import { BoardController } from './controller/board.controller';
-import { Board } from './entities/board.entity';
+import { Board } from 'shared-lib';
 import { BoardService } from './services/board.service';
 
 @Module({

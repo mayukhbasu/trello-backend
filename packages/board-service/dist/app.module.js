@@ -10,8 +10,8 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const config_1 = require("@nestjs/config");
-const board_entity_1 = require("./board/entities/board.entity");
 const shared_lib_1 = require("shared-lib");
+const shared_lib_2 = require("shared-lib");
 const board_module_1 = require("./board/board.module");
 let AppModule = class AppModule {
 };
@@ -27,7 +27,7 @@ exports.AppModule = AppModule = __decorate([
                 username: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 database: process.env.DB_NAME,
-                entities: [board_entity_1.Board, shared_lib_1.User],
+                entities: [shared_lib_1.Board, shared_lib_2.User],
                 synchronize: true,
                 autoLoadEntities: true,
             }),

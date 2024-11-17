@@ -8,7 +8,6 @@ import { UpdateBoardDto } from '../dto/update-board.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
-
 export class BoardService {
   constructor(
     @InjectRepository(Board)
@@ -22,17 +21,18 @@ export class BoardService {
   async createBoard(createBoardDto: CreateBoardDto, user: User): Promise<Board> {
     const { name, description, visibility = 'private' } = createBoardDto;
 
-    // Ensure 'user' has a valid 'id'
     if (!user || !user.id) {
       throw new NotFoundException('User not found');
     }
 
-    // Check if a board with the same name already exists for this user
+    const cacheKey = `user:${user.id}:board:${name}`;
+    const cachedBoard = await this.cacheManager.get<Board>(cacheKey);
+    if (cachedBoard) {
+      return cachedBoard;
+    }
+
     const existingBoard = await this.boardRepository.findOne({
-      where: {
-        name,
-        owner: { id: user.id }, // Correctly reference 'id' as a mandatory field
-      },
+      where: { name, owner: { id: user.id } },
       relations: ['owner'],
     });
 
@@ -40,7 +40,6 @@ export class BoardService {
       throw new ConflictException('A board with this name already exists.');
     }
 
-    // Create a new board instance
     const board = this.boardRepository.create({
       name,
       description,
@@ -48,13 +47,11 @@ export class BoardService {
       owner: user,
     });
 
-    // Ensure the 'board' object has valid values before saving
-    if (!board.name || !board.owner || !board.visibility) {
-      throw new Error('Invalid board data. Please check the input values.');
-    }
+    const savedBoard = await this.boardRepository.save(board);
 
-    // Save the new board and return it
-    return await this.boardRepository.save(board);
+    // Cache the newly created board
+    await this.cacheManager.set(cacheKey, savedBoard, 300);
+    return savedBoard;
   }
 
   async getAllBoards(
@@ -62,144 +59,126 @@ export class BoardService {
     page: number,
     limit: number,
     visibility?: string
-  ): Promise<{boards: Board[], totalCount: number}> {
+  ): Promise<{ boards: Board[]; totalCount: number }> {
     const cacheKey = `boards:${userId}:page:${page}:limit:${limit}:visibility:${visibility || 'all'}`;
     const cachedData = await this.cacheManager.get<{ boards: Board[]; totalCount: number }>(cacheKey);
-    if(cachedData) {
+
+    if (cachedData) {
       return cachedData;
     }
+
     const query = this.boardRepository.createQueryBuilder('board')
-                  .where('board.owner_id = :userId', {userId})
-                  .skip((page - 1) * limit).take(limit);
-    if(visibility) {
+      .where('board.owner_id = :userId', { userId })
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    if (visibility) {
       query.andWhere('board.visibility = :visibility', { visibility });
     }
+
     const [boards, totalCount] = await query.getManyAndCount();
     const result = { boards, totalCount };
+
+    // Cache the result
     await this.cacheManager.set(cacheKey, result, 300);
-    return { boards, totalCount };
+    return result;
   }
 
   async updateBoard(boardId: string, updateBoardDto: UpdateBoardDto, userId: string): Promise<Board> {
-    // Fetch the board with its owner using query builder
-    const board = await this.boardRepository
-      .createQueryBuilder('board')
-      .leftJoinAndSelect('board.owner', 'owner')
-      .where('board.id = :boardId', { boardId })
-      .getOne();
-  
+    const cacheKey = `board:${boardId}`;
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId },
+      relations: ['owner'],
+    });
+
     if (!board) {
       throw new NotFoundException('Board not found.');
     }
-  
-    // Ensure the user is the owner of the board
+
     if (board.owner.id !== userId) {
       throw new ForbiddenException('You do not have permission to update this board.');
     }
-  
-    // Check for a unique board name if it's being updated
+
     if (updateBoardDto.name && updateBoardDto.name !== board.name) {
-      const existingBoard = await this.boardRepository
-        .createQueryBuilder('board')
-        .leftJoinAndSelect('board.owner', 'owner')
-        .where('board.name = :name', { name: updateBoardDto.name })
-        .andWhere('owner.id = :userId', { userId })
-        .getOne();
-  
+      const existingBoard = await this.boardRepository.findOne({
+        where: { name: updateBoardDto.name, owner: { id: userId } },
+      });
+
       if (existingBoard) {
         throw new ConflictException('A board with this name already exists.');
       }
     }
-  
-    // Update the board details
+
     Object.assign(board, updateBoardDto);
-  
-    // Save the updated board and return it
-    return await this.boardRepository.save(board);
+    const updatedBoard = await this.boardRepository.save(board);
+
+    // Update the cache
+    await this.cacheManager.set(cacheKey, updatedBoard, 300);
+    return updatedBoard;
   }
-  
 
   async deleteBoard(boardId: string, user: User): Promise<string> {
-    // Find the board by ID
     const board = await this.boardRepository.findOne({
       where: { id: boardId, owner: { id: user.id } },
     });
 
-    // Check if the board exists
     if (!board) {
       throw new NotFoundException('Board not found.');
     }
 
-    // Ensure the user is the owner of the board
     if (board.owner.id !== user.id) {
       throw new ForbiddenException('You are not authorized to delete this board.');
     }
 
-    // Soft delete the board
     await this.boardRepository.softRemove(board);
+
+    // Invalidate the cache
+    const cacheKey = `board:${boardId}`;
+    await this.cacheManager.del(cacheKey);
 
     return `Board with ID ${boardId} has been successfully deleted.`;
   }
-
-  async addCollaborator(boardId: string, userId: string, collaboratorId: string, role: string): Promise<Board> {
-    // Find the board by ID
-    const board = await this.boardRepository.findOne({
-      where: { id: boardId },
-      relations: ['owner', 'collaborators'],
-    });
-
-    if (!board) {
-      throw new NotFoundException('Board not found.');
-    }
-
-    // Ensure the user making the request is the board owner
-    if (board.owner.id !== userId) {
-      throw new ForbiddenException('You do not have permission to add collaborators.');
-    }
-
-    // Find the collaborator user by ID
-    const collaborator = await this.userRepository.findOne({ where: { id: collaboratorId } });
-
-    if (!collaborator) {
-      throw new NotFoundException('Collaborator user not found.');
-    }
-
-    // Check if the collaborator is already added
-    const isAlreadyCollaborator = board.collaborators.some((user) => user.id === collaborator.id);
-    if (isAlreadyCollaborator) {
-      throw new ConflictException('User is already a collaborator.');
-    }
-
-    // Add the collaborator to the board
-    board.collaborators.push(collaborator);
-
-    // Save the updated board
-    return await this.boardRepository.save(board);
-  }
-
-  async deleteCollaborator(
+  async addCollaborator(
     boardId: string,
     userId: string,
     collaboratorId: string,
     role: string
   ): Promise<Board> {
-    // Fetch the board with owner and collaborators
-    const board = await this.boardRepository.findOne({
-      where: { id: boardId },
-      relations: ['owner', 'collaborators'],
-    });
+    const cacheKey = `board:${boardId}:collaborators`;
   
-    // Check if the board exists
+    // Check if the board exists in cache
+    let board = await this.cacheManager.get<Board>(`board:${boardId}`);
+  
+    // If not in cache, fetch from the database
     if (!board) {
-      throw new NotFoundException('Board not found.');
+      board = await this.boardRepository.findOne({
+        where: { id: boardId },
+        relations: ['owner', 'collaborators'],
+      });
+  
+      if (!board) {
+        throw new NotFoundException('Board not found.');
+      }
+  
+      // Cache the board data
+      await this.cacheManager.set(`board:${boardId}`, board, 300);
     }
   
-    // Check if the requesting user is the owner of the board
+    // Ensure the user making the request is the board owner
     if (board.owner.id !== userId) {
-      throw new ForbiddenException('You do not have permission to delete collaborators.');
+      throw new ForbiddenException('You do not have permission to add collaborators.');
     }
   
-    // Check if the collaborator exists
+    // Check if the collaborator already exists
+    const collaboratorExists = board.collaborators.some(
+      (user) => user.id === collaboratorId
+    );
+  
+    if (collaboratorExists) {
+      throw new ConflictException('User is already a collaborator.');
+    }
+  
+    // Fetch the collaborator from the database
     const collaborator = await this.userRepository.findOne({
       where: { id: collaboratorId },
     });
@@ -208,50 +187,62 @@ export class BoardService {
       throw new NotFoundException('Collaborator user not found.');
     }
   
-    // Check if the user is a collaborator on the board
-    const collaboratorIndex = board.collaborators.findIndex(
-      (user) => user.id === collaboratorId
-    );
+    // Add the collaborator to the list
+    board.collaborators.push(collaborator);
   
+    // Save the updated board and cache the collaborators
+    const updatedBoard = await this.boardRepository.save(board);
+    await this.cacheManager.set(cacheKey, updatedBoard.collaborators, 300);
+  
+    return updatedBoard;
+  }
+  
+  async removeCollaborator(
+    boardId: string,
+    userId: string,
+    collaboratorId: string
+  ): Promise<Board> {
+    const cacheKey = `board:${boardId}`;
+  
+    // Check if the board data is in the cache
+    let board = await this.cacheManager.get<Board>(cacheKey);
+  
+    // If not cached, fetch from the database
+    if (!board) {
+      board = await this.boardRepository.findOne({
+        where: { id: boardId },
+        relations: ['owner', 'collaborators'],
+      });
+  
+      if (!board) {
+        throw new NotFoundException('Board not found.');
+      }
+  
+      // Store the board data in the cache
+      await this.cacheManager.set(cacheKey, board, 300);
+    }
+  
+    // Ensure the user making the request is the board owner
+    if (board.owner.id !== userId) {
+      throw new ForbiddenException('You do not have permission to remove collaborators.');
+    }
+  
+    // Find the collaborator index
+    const collaboratorIndex = board.collaborators.findIndex((user) => user.id === collaboratorId);
     if (collaboratorIndex === -1) {
-      throw new NotFoundException('User is not a collaborator on this board.');
+      throw new NotFoundException('Collaborator not found on this board.');
     }
   
     // Remove the collaborator from the list
     board.collaborators.splice(collaboratorIndex, 1);
   
-    // Save the updated board and return it
-    return await this.boardRepository.save(board);
-  }
-  async changeVisibility(
-    boardId: string,
-    userId: string,
-    visibility: 'public' | 'private'
-  ): Promise<Board> {
-    // Find the board with its owner relation
-    const board = await this.boardRepository.findOne({
-      where: { id: boardId },
-      relations: ['owner'],
-    });
-
-    // Check if the board exists
-    if (!board) {
-      throw new NotFoundException('Board not found.');
-    }
-
-    // Ensure the user is the owner of the board
-    if (board.owner.id !== userId) {
-      throw new ForbiddenException('You do not have permission to change the visibility of this board.');
-    }
-
-    // Update the visibility
-    board.visibility = visibility;
-
-    // Save the updated board and return it
-    return await this.boardRepository.save(board);
-  }
-
+    // Save the updated board to the database
+    const updatedBoard = await this.boardRepository.save(board);
   
-
+    // Update the cache with the updated collaborator list
+    await this.cacheManager.set(cacheKey, updatedBoard, 300);
+  
+    return updatedBoard;
+  }
   
 }

@@ -23,7 +23,7 @@ exports.BoardModule = BoardModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule,
-            typeorm_1.TypeOrmModule.forFeature([shared_lib_2.Board, shared_lib_1.User]),
+            typeorm_1.TypeOrmModule.forFeature([shared_lib_2.Board, shared_lib_1.User, shared_lib_2.List, shared_lib_2.Card]),
             cache_manager_1.CacheModule.register({
                 store: redisStore,
                 host: 'localhost',

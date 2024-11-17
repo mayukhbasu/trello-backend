@@ -6,13 +6,13 @@ import * as redisStore from 'cache-manager-ioredis';
 
 import { User } from 'shared-lib';
 import { BoardController } from './controller/board.controller';
-import { Board } from 'shared-lib';
+import { Board, List, Card } from 'shared-lib';
 import { BoardService } from './services/board.service';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Board, User]),
+    TypeOrmModule.forFeature([Board, User, List, Card]),
     CacheModule.register({
       store: redisStore as any, // Cast to `any` to avoid TypeScript issues
       host: 'localhost',

@@ -3,7 +3,7 @@
 import { Controller, Post, Body, UseGuards, Request, Get, Query, Param, Put, Delete, Patch, Req } from '@nestjs/common';
 import { BoardService } from '../services/board.service';
 import { CreateBoardDto } from '../dto/create-board.dto';
-import { Board } from '../entities/board.entity';
+import { Board } from 'shared-lib';
 import { JwtAuthGuard } from 'shared-lib';
 import { UpdateBoardDto } from '../dto/update-board.dto';
 import { UpdateVisibilityDto } from '../dto/update-visibility.dto';

@@ -43,9 +43,9 @@ let BoardController = class BoardController {
         const userId = req.user.id;
         return this.boardService.addCollaborator(boardId, userId, collaboratorId, role);
     }
-    async deleteCollaborator(boardId, collaboratorId, role, req) {
+    async deleteCollaborator(boardId, collaboratorId, req) {
         const userId = req.user.id;
-        return this.boardService.deleteCollaborator(boardId, userId, collaboratorId, role);
+        return this.boardService.removeCollaborator(boardId, userId, collaboratorId);
     }
     async changeVisibility(boardId, updateVisibilityDto, req) {
         const userId = req.user.id;
@@ -108,10 +108,9 @@ __decorate([
     (0, common_1.UseGuards)(shared_lib_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('boardId')),
     __param(1, (0, common_1.Body)('collaboratorId')),
-    __param(2, (0, common_1.Body)('role')),
-    __param(3, (0, common_1.Request)()),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], BoardController.prototype, "deleteCollaborator", null);
 __decorate([

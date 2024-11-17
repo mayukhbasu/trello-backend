@@ -44,6 +44,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { eager: true }),
     (0, typeorm_1.JoinColumn)({ name: 'owner_id' }),
+    (0, typeorm_1.Index)('idx_board_owner', { unique: false }),
     __metadata("design:type", user_entity_1.User)
 ], Board.prototype, "owner", void 0);
 __decorate([
@@ -70,6 +71,6 @@ __decorate([
     __metadata("design:type", Date)
 ], Board.prototype, "updatedAt", void 0);
 exports.Board = Board = __decorate([
-    (0, typeorm_1.Entity)('boards')
+    (0, typeorm_1.Entity)('board')
 ], Board);
 //# sourceMappingURL=board.entity.js.map

@@ -17,6 +17,6 @@ export declare class BoardService {
     updateBoard(boardId: string, updateBoardDto: UpdateBoardDto, userId: string): Promise<Board>;
     deleteBoard(boardId: string, user: User): Promise<string>;
     addCollaborator(boardId: string, userId: string, collaboratorId: string, role: string): Promise<Board>;
-    deleteCollaborator(boardId: string, userId: string, collaboratorId: string, role: string): Promise<Board>;
+    removeCollaborator(boardId: string, userId: string, collaboratorId: string): Promise<Board>;
     changeVisibility(boardId: string, userId: string, visibility: 'public' | 'private'): Promise<Board>;
 }

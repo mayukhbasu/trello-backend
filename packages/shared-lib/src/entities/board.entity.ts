@@ -9,12 +9,13 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { List } from './list.entity';
 import { Card } from './card.entity';
 import { User } from './user.entity';
 
-@Entity('boards')
+@Entity('board')
 export class Board {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -36,6 +37,7 @@ export class Board {
 
   @ManyToOne(() => User, { eager: true })
   @JoinColumn({ name: 'owner_id' })
+  @Index('idx_board_owner', { unique: false })
   owner: User;
 
   // Adding a many-to-many relationship for collaborators

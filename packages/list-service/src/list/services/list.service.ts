@@ -6,6 +6,7 @@ import { Board } from 'shared-lib';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CreateListDto } from '../dto/create-list.dto';
+import { UpdateListDto } from '../dto/update-list.dto';
 
 @Injectable()
 export class ListService {
@@ -56,5 +57,49 @@ export class ListService {
     await this.cacheManager.set(cacheKey, lists, 300);
 
     return lists;
+  }
+
+  async updateList(listId: string, updateListDto: UpdateListDto): Promise<List> {
+    const cacheKey = `list:${listId}`;
+
+    // Check the cache first
+    let list = await this.cacheManager.get<List>(cacheKey);
+
+    if (!list) {
+      // Fetch the list from the database
+      list = await this.listRepository.findOne({
+        where: { id: listId },
+        relations: ['board'],
+      });
+
+      if (!list) {
+        throw new NotFoundException('List not found.');
+      }
+
+      // Cache the fetched list
+      await this.cacheManager.set(cacheKey, list, 300);
+    }
+
+    // Check if the list name is being updated and enforce uniqueness
+    if (updateListDto.name && updateListDto.name !== list.name) {
+      const existingList = await this.listRepository.findOne({
+        where: { name: updateListDto.name, board: { id: list.board.id } },
+      });
+
+      if (existingList) {
+        throw new ConflictException('A list with this name already exists within the board.');
+      }
+    }
+
+    // Update the list details
+    Object.assign(list, updateListDto);
+
+    // Save the updated list
+    const updatedList = await this.listRepository.save(list);
+
+    // Update the cache
+    await this.cacheManager.set(cacheKey, updatedList, 300);
+
+    return updatedList;
   }
 }

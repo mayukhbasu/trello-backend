@@ -48,6 +48,10 @@ __decorate([
     (0, typeorm_1.UpdateDateColumn)(),
     __metadata("design:type", Date)
 ], List.prototype, "updatedAt", void 0);
+__decorate([
+    (0, typeorm_1.DeleteDateColumn)(),
+    __metadata("design:type", Date)
+], List.prototype, "deletedAt", void 0);
 exports.List = List = __decorate([
     (0, typeorm_1.Entity)('lists')
 ], List);

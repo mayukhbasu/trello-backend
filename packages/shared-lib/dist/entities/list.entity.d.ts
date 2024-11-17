@@ -9,4 +9,5 @@ export declare class List {
     archived: boolean;
     createdAt: Date;
     updatedAt: Date;
+    deletedAt?: Date;
 }

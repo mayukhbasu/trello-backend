@@ -19,5 +19,6 @@ __exportStar(require("./entities/user.entity"), exports);
 __exportStar(require("./entities/board.entity"), exports);
 __exportStar(require("./entities/list.entity"), exports);
 __exportStar(require("./entities/card.entity"), exports);
+__exportStar(require("./entities/activity.entity"), exports);
 __exportStar(require("./guards/jwt-auth.guard"), exports);
 //# sourceMappingURL=index.js.map

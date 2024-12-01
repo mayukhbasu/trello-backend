@@ -11,9 +11,12 @@ export class ListSubscriptionsManager {
   }
 
   removeSubscription(boardId: string, clientId: string): void {
-    this.subscriptions.get(boardId)?.delete(clientId);
-    if (this.subscriptions.get(boardId)?.size === 0) {
-      this.subscriptions.delete(boardId);
+    const subscribers = this.subscriptions.get(boardId);
+    if (subscribers) {
+      subscribers.delete(clientId); // Remove the client
+      if (subscribers.size === 0) {
+        this.subscriptions.delete(boardId); // Clean up if no clients remain
+      }
     }
   }
 

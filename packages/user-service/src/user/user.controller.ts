@@ -1,44 +1,32 @@
-// user.controller.ts
-
-import { Body, Controller, Get, Param, Post, UseGuards, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Headers, Param, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User, JwtAuthGuard } from 'shared-lib';
-
+import { User } from './user.entity';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   /**
-   * Register a new user
-   * @param body - Contains username, email, and password
+   * Authenticate or register a user with Google SSO
+   * @param authorization - Authorization header containing Google ID token
    */
-  @Post('register')
-  async register(
-    @Body() body: { username: string; email: string; password: string },
+  @Post('google-auth')
+  async authenticateWithGoogle(
+    @Headers('Authorization') authorization: string,
   ): Promise<User> {
-    const { username, email, password } = body;
-    return this.userService.register(username, email, password);
-  }
+    if (!authorization) {
+      throw new UnauthorizedException('Authorization header is missing.');
+    }
 
-  /**
-   * Login user and return a JWT token
-   * @param body - Contains email and password
-   */
-  @Post('login')
-  async login(
-    @Body() body: { email: string; password: string },
-  ): Promise<{ token: string }> {
-    const { email, password } = body;
-    return this.userService.login(email, password);
+    const idToken = authorization.replace('Bearer ', '');
+    return this.userService.authenticateWithGoogle(idToken);
   }
 
   /**
    * Get user profile by user ID
-   * @param userId - ID of the user
+   * @param userId - User ID
    */
   @Get('profile/:userId')
-  @UseGuards(JwtAuthGuard)
   async getProfile(@Param('userId') userId: string): Promise<User> {
     return this.userService.getUserProfile(userId);
   }

@@ -227,4 +227,28 @@ export class ListService {
     await this.activityRepository.save(activity);
   }
 
+  async getListById(listId: string): Promise<List> {
+    const cacheKey = `list:${listId}`;
+  
+    // Check cache first
+    let list = await this.cacheManager.get<List>(cacheKey);
+    if (!list) {
+      // Fetch list from the database
+      list = await this.listRepository.findOne({
+        where: { id: listId },
+        relations: ['board'], // Include board relation for WebSocket events
+      });
+  
+      if (!list) {
+        throw new NotFoundException(`List with ID ${listId} not found.`);
+      }
+  
+      // Cache the result
+      await this.cacheManager.set(cacheKey, list, 300);
+    }
+  
+    return list;
+  }
+  
+
 }

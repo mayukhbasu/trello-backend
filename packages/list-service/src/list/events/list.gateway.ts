@@ -1,34 +1,30 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ListSubscriptionsManager } from '../subscriptions/list.subscriptions.manager';
 
-@WebSocketGateway({cors: true})
+@WebSocketGateway({ cors: true })
 export class ListGateway implements OnGatewayConnection, OnGatewayDisconnect {
-
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly subscriptionsManager: ListSubscriptionsManager) {}
-
-  handleConnection(client: Socket) {
+  handleConnection(client: Socket): void {
     const { boardId } = client.handshake.query;
-    const boardIdString = Array.isArray(boardId) ? boardId[0] : boardId; // Ensure it's a string
+    const boardIdString = Array.isArray(boardId) ? boardId[0] : boardId;
     if (boardIdString) {
-      client.join(boardIdString); // Join a room for the specific board
-      this.subscriptionsManager.addSubscription(boardIdString, client.id);
+      client.join(boardIdString); // Join room for board
     }
+    console.log('Client connected:', client.id);
   }
-  handleDisconnect(client: any) {
+
+  handleDisconnect(client: Socket): void {
     const { boardId } = client.handshake.query;
-  const boardIdString = Array.isArray(boardId) ? boardId[0] : boardId; // Ensure it's a string
-
-  if (boardIdString) {
-    // Remove the client from the subscription manager
-    this.subscriptionsManager.removeSubscription(boardIdString, client.id);
-
-    // Leave the room
-    client.leave(boardIdString);
-  }
+    const boardIdString = Array.isArray(boardId) ? boardId[0] : boardId;
+    if (boardIdString) {
+      client.leave(boardIdString); // Leave room for board
+    }
+    console.log('Client disconnected:', client.id);
   }
 
+  emitUpdate(boardId: string, event: string, data: any): void {
+    this.server.to(boardId).emit(event, data);
+  }
 }

@@ -13,7 +13,6 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('Token not provided.');
     }
-
     const secret = this.configService.get<string>('JWT_SECRET');
 
     if (!secret) {

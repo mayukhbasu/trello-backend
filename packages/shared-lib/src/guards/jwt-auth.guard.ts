@@ -1,6 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

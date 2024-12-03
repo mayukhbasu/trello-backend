@@ -1,72 +1,81 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var JwtAuthGuard_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JwtAuthGuard = void 0;
-const jwt = __importStar(require("jsonwebtoken"));
+const google_auth_library_1 = require("google-auth-library");
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
-let JwtAuthGuard = class JwtAuthGuard {
+let JwtAuthGuard = JwtAuthGuard_1 = class JwtAuthGuard {
     constructor(configService) {
         this.configService = configService;
+        this.logger = new common_1.Logger(JwtAuthGuard_1.name);
+        const clientId = this.configService.get('GCLOUD_CLIENT_ID');
+        if (!clientId) {
+            throw new Error('GCLOUD_CLIENT_ID is not defined in environment variables.');
+        }
+        this.googleClient = new google_auth_library_1.OAuth2Client(clientId);
+        this.logger.log('Google OAuth2 Client initialized in GoogleAuthGuard');
     }
     canActivate(context) {
-        var _a;
-        const request = context.switchToHttp().getRequest();
-        const token = (_a = request.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
-        if (!token) {
-            throw new common_1.UnauthorizedException('Token not provided.');
-        }
-        const secret = this.configService.get('JWT_SECRET');
-        if (!secret) {
-            throw new Error('JWT_SECRET is not defined in the environment variables.');
-        }
-        try {
-            const decoded = jwt.verify(token, secret);
-            request.user = {
-                id: decoded.userId,
-                username: decoded.username,
-                roles: decoded.roles,
-            };
-            return true;
-        }
-        catch (error) {
-            throw new common_1.UnauthorizedException('Invalid or expired token.');
-        }
+        return __awaiter(this, void 0, void 0, function* () {
+            const request = context.switchToHttp().getRequest();
+            const authHeader = request.headers.authorization;
+            if (!authHeader) {
+                this.logger.warn('Authorization header not found');
+                throw new common_1.UnauthorizedException('Authorization header not provided.');
+            }
+            const token = authHeader.split(' ')[1];
+            if (!token) {
+                this.logger.warn('Bearer token not found in authorization header');
+                throw new common_1.UnauthorizedException('Google ID token not provided.');
+            }
+            try {
+                const ticket = yield this.googleClient.verifyIdToken({
+                    idToken: token,
+                    audience: this.configService.get('GCLOUD_CLIENT_ID'),
+                });
+                const payload = ticket.getPayload();
+                if (!payload) {
+                    this.logger.warn('Google ID token payload is missing');
+                    throw new common_1.UnauthorizedException('Invalid Google ID token.');
+                }
+                this.logger.debug(`Google ID token successfully verified for user: ${payload.email}`);
+                // Attach user information to the request object
+                request.user = {
+                    id: payload.sub, // Google user ID
+                    email: payload.email,
+                    name: payload.name,
+                    picture: payload.picture,
+                };
+                return true; // Allow access
+            }
+            catch (error) {
+                this.logger.error('Failed to validate Google ID token', error);
+                throw new common_1.UnauthorizedException('Invalid or expired Google ID token.');
+            }
+        });
     }
 };
 exports.JwtAuthGuard = JwtAuthGuard;
-exports.JwtAuthGuard = JwtAuthGuard = __decorate([
+exports.JwtAuthGuard = JwtAuthGuard = JwtAuthGuard_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService])
 ], JwtAuthGuard);

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Headers, Param, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Headers, Param, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
+import { JwtAuthGuard } from 'shared-lib';
 
 @Controller('users')
 export class UserController {
@@ -27,6 +28,7 @@ export class UserController {
    * @param userId - User ID
    */
   @Get('profile/:userId')
+  @UseGuards(JwtAuthGuard)
   async getProfile(@Param('userId') userId: string): Promise<User> {
     return this.userService.getUserProfile(userId);
   }

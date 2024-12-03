@@ -6,19 +6,15 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
-  private readonly logger = new Logger(UserService.name); // Initialize NestJS Logger
+  private readonly logger = new Logger(UserService.name);
   private googleClient: OAuth2Client;
 
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {
-    // Initialize OAuth2 Client with Client ID and Secret
-    this.googleClient = new OAuth2Client(
-      process.env.GCLOUD_CLIENT_ID,
-      process.env.GCLOUD_CLIENT_SECRET,
-      process.env.GCLOUD_REDIRECT_URI,
-    );
+    // Initialize Google OAuth2 Client
+    this.googleClient = new OAuth2Client(process.env.GCLOUD_CLIENT_ID, process.env.GCLOUD_CLIENT_SECRET);
     this.logger.log('Google OAuth2 Client initialized');
   }
 
@@ -32,7 +28,7 @@ export class UserService {
     try {
       const ticket = await this.googleClient.verifyIdToken({
         idToken,
-        audience: process.env.GCLOUD_CLIENT_ID, // Ensure this matches your Google Cloud Client ID
+        audience: process.env.GCLOUD_CLIENT_ID, // Ensure this matches your Google Client ID
       });
       const payload = ticket.getPayload();
       if (!payload) {

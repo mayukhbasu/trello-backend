@@ -1,15 +1,12 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { Request } from 'express';
-import { JwtAuthGuard } from './auth/jwt.guard';
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  @UseGuards(JwtAuthGuard)
-  @Get('protected')
-  getProtected(@Req() req: Request) {
-    return {
-      message: 'This is a protected route',
-      user: req.user,
-    };
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
   }
 }

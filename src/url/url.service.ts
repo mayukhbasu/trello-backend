@@ -55,7 +55,7 @@ export class UrlService {
     if (!url) throw new NotFoundException('Short URL not found');
 
     // Cache it
-    await this.cacheManager.set(shortCode, url.longUrl);
+    await this.cacheManager.set(shortCode, url.longUrl, { ttl: 60 * 60 });
 
     return url.longUrl;
   }
